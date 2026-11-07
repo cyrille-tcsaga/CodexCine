@@ -1,0 +1,72 @@
+{
+  "adult": false,
+  "backdrop_path": "/hZkgoQYus5vegHoetLkCJzb17zJ.jpg",
+  "belongs_to_collection": null,
+  "budget": 63000000,
+  "genres": [
+    { "id": 18, "name": "Drame" },
+    { "id": 53, "name": "Thriller" }
+  ],
+  "homepage": "http://www.foxmovies.com/movies/fight-club",
+  "id": 550,
+  "imdb_id": "tt0137523",
+  "original_language": "en",
+  "original_title": "Fight Club",
+  "overview": "Le narrateur, sans identité précise, vit seul, travaille seul, dort seul.",
+  "popularity": 61.416,
+  "poster_path": "/t1i10ptOivG4hV7erkX3tmKpiqm.jpg",
+  "production_companies": [
+    { "id": 508, "logo_path": "/7cxRWzi4LsVm4Utfpr1hfARNurT.png", "name": "Regency Enterprises", "origin_country": "US" }
+  ],
+  "release_date": "1999-10-15",
+  "revenue": 100853753,
+  "runtime": 139,
+  "spoken_languages": [
+    { "english_name": "English", "iso_639_1": "en", "name": "English" }
+  ],
+  "status": "Released",
+  "tagline": "Malaise dans la civilisation",
+  "title": "Fight Club",
+  "video": false,
+  "vote_average": 8.438,
+  "vote_count": 27280,
+  "credits": {
+    "cast": [
+      { "adult": false, "gender": 2, "id": 819, "known_for_department": "Acting", "name": "Edward Norton", "original_name": "Edward Norton", "popularity": 26.99, "profile_path": "/8nytsqL59SFJTVYVrN72k6qkGgJ.jpg", "cast_id": 4, "character": "The Narrator", "credit_id": "52fe4250c3a36847f80149f3", "order": 0 },
+      { "adult": false, "gender": 2, "id": 287, "known_for_department": "Acting", "name": "Brad Pitt", "original_name": "Brad Pitt", "popularity": 46.7, "profile_path": null, "cast_id": 5, "character": "Tyler Durden", "credit_id": "52fe4250c3a36847f80149f7", "order": 1 }
+    ],
+    "crew": [
+      { "adult": false, "gender": 2, "id": 7467, "known_for_department": "Directing", "name": "David Fincher", "department": "Directing", "job": "Director" }
+    ]
+  },
+  "videos": {
+    "results": [
+      { "iso_639_1": "en", "iso_3166_1": "US", "name": "Behind the scenes", "key": "featurette1", "site": "YouTube", "size": 1080, "type": "Featurette", "official": true, "published_at": "2019-10-15T17:00:00.000Z", "id": "aaa" },
+      { "iso_639_1": "en", "iso_3166_1": "US", "name": "Official Trailer", "key": "enTrailerKey", "site": "YouTube", "size": 1080, "type": "Trailer", "official": true, "published_at": "2014-10-02T19:20:22.000Z", "id": "bbb" },
+      { "iso_639_1": "fr", "iso_3166_1": "FR", "name": "Bande-annonce VF", "key": "frTrailerKey", "site": "YouTube", "size": 720, "type": "Trailer", "official": false, "published_at": "2014-10-02T19:20:22.000Z", "id": "ccc" }
+    ]
+  },
+  "recommendations": {
+    "page": 1,
+    "results": [],
+    "total_pages": 0,
+    "total_results": 0
+  },
+  "similar": {
+    "page": 1,
+    "results": [
+      { "adult": false, "backdrop_path": null, "genre_ids": [18], "id": 680, "original_language": "en", "original_title": "Pulp Fiction", "overview": "", "popularity": 60.1, "poster_path": "/fIE3lAGcZDV1G6XM5KmuWnNsPp1.jpg", "release_date": "1994-09-10", "title": "Pulp Fiction", "video": false, "vote_average": 8.5, "vote_count": 25000 }
+    ],
+    "total_pages": 1,
+    "total_results": 1
+  },
+  "release_dates": {
+    "results": [
+      { "iso_3166_1": "US", "release_dates": [ { "certification": "R", "descriptors": [], "iso_639_1": "", "note": "", "release_date": "1999-10-15T00:00:00.000Z", "type": 3 } ] },
+      { "iso_3166_1": "FR", "release_dates": [
+        { "certification": "", "descriptors": [], "iso_639_1": "fr", "note": "", "release_date": "1999-11-10T00:00:00.000Z", "type": 1 },
+        { "certification": "16", "descriptors": [], "iso_639_1": "fr", "note": "", "release_date": "1999-11-10T00:00:00.000Z", "type": 3 }
+      ] }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The explicit size keeps the icon small: cards use centerCrop, which scales to the intrinsic size. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <size
+                android:width="156dp"
+                android:height="234dp" />
+            <solid android:color="@color/default_background" />
+        </shape>
+    </item>
+    <item
+        android:drawable="@drawable/ic_movie"
+        android:gravity="center"
+        android:width="48dp"
+        android:height="48dp" />
+</layer-list>

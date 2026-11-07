@@ -1,0 +1,81 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="fr">
+    <string name="app_name">Codex Ciné</string>
+
+    <!-- Generic actions and errors -->
+    <string name="retry">Réessayer</string>
+    <string name="back">Retour</string>
+    <string name="error_generic">Une erreur est survenue lors du chargement.</string>
+    <string name="error_no_connection">Pas de connexion Internet. Vérifiez votre réseau, puis réessayez.</string>
+    <string name="error_invalid_token">Jeton TMDB manquant ou invalide. Ajoutez TMDB_ACCESS_TOKEN=… dans le fichier local.properties, puis recompilez l\'application.</string>
+    <string name="error_no_source">Aucune source de lecture disponible pour ce titre.</string>
+    <string name="error_playback">Erreur de lecture.</string>
+    <string name="empty_content">Aucun contenu disponible.</string>
+
+    <!-- Home rows -->
+    <string name="see_all">Voir tout</string>
+    <string name="row_my_list">Ma liste</string>
+    <string name="row_trending">Tendances de la semaine</string>
+    <string name="row_popular_movies">Films populaires</string>
+    <string name="row_now_playing_movies">À l\'affiche</string>
+    <string name="row_top_rated_movies">Films les mieux notés</string>
+    <string name="row_upcoming_movies">Prochainement</string>
+    <string name="row_popular_tv">Séries populaires</string>
+    <string name="row_top_rated_tv">Séries les mieux notées</string>
+    <string name="row_on_the_air_tv">Séries en cours de diffusion</string>
+    <string name="row_genre_action">Action</string>
+    <string name="row_genre_animation">Animation</string>
+    <string name="row_genre_comedy">Comédie</string>
+    <string name="row_about">À propos</string>
+
+    <!-- Cards -->
+    <string name="separator" translatable="false">" · "</string>
+    <string name="rating_stars">★ %1$s</string>
+    <string name="about_card_content">TMDB</string>
+
+    <!-- Details -->
+    <string name="details_no_overview">Aucun résumé disponible en français.</string>
+    <string name="action_play">Lecture</string>
+    <string name="action_trailer">Bande-annonce</string>
+    <string name="action_add_my_list">Ajouter à ma liste</string>
+    <string name="action_remove_my_list">Retirer de ma liste</string>
+    <string name="no_trailer_app">Aucune application ne peut lire cette bande-annonce.</string>
+    <string name="row_seasons">Saisons</string>
+    <string name="row_cast">Casting</string>
+    <string name="row_recommendations">Recommandations</string>
+    <string name="runtime_hours_minutes">%1$d h %2$d min</string>
+    <string name="runtime_hours">%1$d h</string>
+    <string name="runtime_minutes">%1$d min</string>
+    <plurals name="season_count">
+        <item quantity="one">%1$d saison</item>
+        <item quantity="many">%1$d saisons</item>
+        <item quantity="other">%1$d saisons</item>
+    </plurals>
+    <plurals name="episode_count">
+        <item quantity="one">%1$d épisode</item>
+        <item quantity="many">%1$d épisodes</item>
+        <item quantity="other">%1$d épisodes</item>
+    </plurals>
+    <plurals name="rating_with_votes">
+        <item quantity="one">★ %1$s (%2$s vote)</item>
+        <item quantity="many">★ %1$s (%2$s votes)</item>
+        <item quantity="other">★ %1$s (%2$s votes)</item>
+    </plurals>
+
+    <!-- Season -->
+    <string name="season_number">Saison %1$d</string>
+    <string name="season_title">Saison %1$d · %2$s</string>
+    <string name="episode_title">E%1$d · %2$s</string>
+    <string name="episode_title_untitled">E%1$d</string>
+
+    <!-- Search -->
+    <string name="search_no_results">Aucun résultat pour « %1$s »</string>
+    <string name="row_movies">Films</string>
+    <string name="row_tv_shows">Séries</string>
+    <string name="row_people">Personnes</string>
+
+    <!-- Playback -->
+    <string name="playback_episode_subtitle">S%1$d · E%2$d</string>
+
+    <!-- About -->
+    <string name="about_message">Codex Ciné utilise l\'API TMDB mais n\'est ni approuvé ni certifié par TMDB.\n\nVersion %1$s</string>
+</resources>

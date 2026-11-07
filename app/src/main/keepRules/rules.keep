@@ -1,0 +1,4 @@
+# AGP combines every keep rule file in src/main/keepRules and passes them to R8.
+#
+# Nothing is needed here: Retrofit, OkHttp, kotlinx.serialization, Media3 and Glide all ship consumer
+# rules, and the release build was verified with them alone.

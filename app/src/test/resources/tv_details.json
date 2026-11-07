@@ -1,0 +1,35 @@
+{
+  "backdrop_path": "/tsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
+  "first_air_date": "2008-01-20",
+  "genres": [ { "id": 18, "name": "Drame" } ],
+  "id": 1396,
+  "in_production": false,
+  "last_air_date": "2013-09-29",
+  "name": "Breaking Bad",
+  "number_of_episodes": 62,
+  "number_of_seasons": 5,
+  "overview": "   ",
+  "poster_path": "/ztkUQFLlC19CCMYHW9o1zWhJRNq.jpg",
+  "seasons": [
+    { "air_date": "2009-02-17", "episode_count": 16, "id": 3577, "name": "Épisodes spéciaux", "overview": "", "poster_path": "/40dT79mDEZwXkQiZNBgSaydQFDP.jpg", "season_number": 0, "vote_average": 0.0 },
+    { "air_date": "2008-01-20", "episode_count": 7, "id": 3572, "name": "Saison 1", "overview": "", "poster_path": "/1BP4xYv9ZG4ZVHkL7ocOziBbSYH.jpg", "season_number": 1, "vote_average": 8.3 },
+    { "air_date": "2009-03-08", "episode_count": 13, "id": 3573, "name": "Saison 2", "overview": "", "poster_path": null, "season_number": 2, "vote_average": 8.5 }
+  ],
+  "vote_average": 8.9,
+  "vote_count": 14000,
+  "credits": { "cast": [ { "id": 17419, "name": "Bryan Cranston", "character": "Walter White", "profile_path": "/7Jahy5LZX2Fo8fGJltMreAI49hC.jpg", "order": 0 } ] },
+  "videos": { "results": [] },
+  "recommendations": {
+    "page": 1,
+    "results": [ { "id": 1399, "name": "Game of Thrones", "poster_path": "/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg", "backdrop_path": null, "first_air_date": "2011-04-17", "vote_average": 8.4, "vote_count": 21000, "media_type": "tv" } ],
+    "total_pages": 1,
+    "total_results": 1
+  },
+  "similar": { "page": 1, "results": [], "total_pages": 0, "total_results": 0 },
+  "content_ratings": {
+    "results": [
+      { "descriptors": [], "iso_3166_1": "US", "rating": "TV-MA" },
+      { "descriptors": [], "iso_3166_1": "FR", "rating": "16" }
+    ]
+  }
+}

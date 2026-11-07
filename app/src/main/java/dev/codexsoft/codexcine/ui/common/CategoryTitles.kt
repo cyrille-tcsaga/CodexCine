@@ -7,6 +7,7 @@ import dev.codexsoft.codexcine.domain.model.CategoryType
 @get:StringRes
 val CategoryType.titleRes: Int
     get() = when (this) {
+        CategoryType.CONTINUE_WATCHING -> R.string.row_continue_watching
         CategoryType.MY_LIST -> R.string.row_my_list
         CategoryType.TRENDING -> R.string.row_trending
         CategoryType.POPULAR_MOVIES -> R.string.row_popular_movies

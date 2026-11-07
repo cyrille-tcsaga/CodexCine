@@ -1,0 +1,67 @@
+# Ad, popunder and tracking hosts. One host per line; a host also covers its subdomains.
+# Never list a host that could serve video: the CDN behind the embed is unknown.
+
+# Google ads and analytics
+doubleclick.net
+googlesyndication.com
+googleadservices.com
+googletagservices.com
+googletagmanager.com
+google-analytics.com
+adservice.google.com
+
+# Ad exchanges
+adnxs.com
+amazon-adsystem.com
+criteo.com
+openx.net
+pubmatic.com
+rubiconproject.com
+moatads.com
+scorecardresearch.com
+advertising.com
+zedo.com
+
+# Native ads
+taboola.com
+outbrain.com
+revcontent.com
+mgid.com
+adskeeper.com
+
+# Popunders and aggressive networks
+popads.net
+popcash.net
+propellerads.com
+propellerclick.com
+monetag.com
+onclickads.net
+onclkds.com
+popmyads.com
+exoclick.com
+exosrv.com
+juicyads.com
+trafficjunky.net
+adsterra.com
+adcash.com
+clickadu.com
+hilltopads.net
+hilltopads.com
+ad-maven.com
+admaven.com
+bidvertiser.com
+pushground.com
+richads.com
+rollerads.com
+a-ads.com
+yllix.com
+shorte.st
+adf.ly
+
+# Seen on the embed page on 2026-11-07
+fencingnora.click
+s0-greate.net
+
+# Trackers
+hotjar.com
+mc.yandex.ru

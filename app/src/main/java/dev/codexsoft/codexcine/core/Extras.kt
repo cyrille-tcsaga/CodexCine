@@ -8,6 +8,11 @@ object Extras {
     const val SEASON_NUMBER = "extra_season_number"
     const val EPISODE_NUMBER = "extra_episode_number"
     const val CATEGORY = "extra_category"
+    const val AUTO_RESUME = "extra_auto_resume"
+
+    // Debug test harness only. PlaybackActivity ignores them in release builds.
+    const val DEBUG_EMBED_URL = "extra_debug_embed_url"
+    const val DEBUG_FORCE_BASIC_MODE = "extra_debug_force_basic_mode"
 
     /** Value used when an optional Int extra (season or episode number) is absent. */
     const val NO_VALUE = -1

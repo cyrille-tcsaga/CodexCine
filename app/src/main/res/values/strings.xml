@@ -9,10 +9,12 @@
     <string name="error_invalid_token">Jeton TMDB manquant ou invalide. Ajoutez TMDB_ACCESS_TOKEN=… dans le fichier local.properties, puis recompilez l\'application.</string>
     <string name="error_no_source">Aucune source de lecture disponible pour ce titre.</string>
     <string name="error_playback">Erreur de lecture.</string>
+    <string name="error_service_unreachable">Impossible de contacter le service de lecture.</string>
     <string name="empty_content">Aucun contenu disponible.</string>
 
     <!-- Home rows -->
     <string name="see_all">Voir tout</string>
+    <string name="row_continue_watching">Continuer à regarder</string>
     <string name="row_my_list">Ma liste</string>
     <string name="row_trending">Tendances de la semaine</string>
     <string name="row_popular_movies">Films populaires</string>
@@ -35,6 +37,8 @@
     <!-- Details -->
     <string name="details_no_overview">Aucun résumé disponible en français.</string>
     <string name="action_play">Lecture</string>
+    <string name="action_play_unavailable">Indisponible</string>
+    <string name="card_time_left">Reste %1$s</string>
     <string name="action_trailer">Bande-annonce</string>
     <string name="action_add_my_list">Ajouter à ma liste</string>
     <string name="action_remove_my_list">Retirer de ma liste</string>
@@ -75,6 +79,62 @@
 
     <!-- Playback -->
     <string name="playback_episode_subtitle">S%1$d · E%2$d</string>
+    <string name="player_episode_named">S%1$d · E%2$d · %3$s</string>
+    <string name="player_loading">Chargement de la source…</string>
+    <string name="player_slow_connection">Connexion lente…</string>
+    <string name="player_muted_hint">Son coupé, appuyez sur OK pour réactiver</string>
+    <string name="player_basic_notice">Mode simplifié : mettez à jour « Android System WebView » pour profiter des commandes avancées.</string>
+    <string name="player_basic_back_hint">Retour : quitter la lecture</string>
+    <string name="player_end_at">Fin à %1$s</string>
+    <string name="player_remaining">-%1$s</string>
+    <string name="player_rate">%1$s×</string>
+    <string name="player_rate_selected">✓ %1$s×</string>
+    <string name="player_speed_title">Vitesse de lecture</string>
+    <string name="player_exit_title">Quitter la lecture ?</string>
+    <string name="player_continue">Continuer</string>
+    <string name="player_quit">Quitter</string>
+    <string name="player_resume_title">Reprendre à %1$s ?</string>
+    <string name="player_resume">Reprendre</string>
+    <string name="player_from_start">Depuis le début</string>
+    <string name="player_next_title">Épisode suivant : S%1$d · E%2$d · %3$s</string>
+    <string name="player_next_title_unnamed">Épisode suivant : S%1$d · E%2$d</string>
+    <string name="player_countdown">%1$d</string>
+    <string name="player_play_now">Lire maintenant</string>
+    <string name="player_cancel">Annuler</string>
+    <string name="player_feedback_forward">+%1$d s</string>
+    <string name="player_feedback_rewind">-%1$d s</string>
+    <string name="player_feedback_speed">Vitesse %1$s×</string>
+    <string name="player_error_source_timeout">La source ne répond pas.</string>
+    <string name="player_error_page">Impossible de charger la page de lecture.</string>
+    <string name="player_error_ssl">La connexion à la source n\'est pas sécurisée.</string>
+    <string name="player_error_renderer">Le lecteur s\'est arrêté de façon inattendue.</string>
+    <string name="player_error_webview">Le composant « Android System WebView » n\'est pas disponible sur cet appareil.</string>
+
+    <!-- Player, for TalkBack -->
+    <string name="player_cd_rewind">Reculer de 10 secondes</string>
+    <string name="player_cd_forward">Avancer de 10 secondes</string>
+    <string name="player_cd_play">Lire</string>
+    <string name="player_cd_pause">Mettre en pause</string>
+    <string name="player_cd_speed">Vitesse actuelle %1$s fois</string>
+    <string name="player_cd_mute">Couper le son</string>
+    <string name="player_cd_unmute">Réactiver le son</string>
+    <string name="player_cd_next">Épisode suivant</string>
+    <string name="player_cd_reload">Recharger</string>
+    <string name="player_cd_quit">Quitter</string>
+    <string name="player_cd_position">Position %1$s sur %2$s</string>
+    <string name="player_announce_play">Lecture</string>
+    <string name="player_announce_pause">Pause</string>
+    <string name="player_announce_no_source">Source introuvable</string>
+    <plurals name="player_spoken_hours">
+        <item quantity="one">%1$d heure %2$d</item>
+        <item quantity="many">%1$d heures %2$d</item>
+        <item quantity="other">%1$d heures %2$d</item>
+    </plurals>
+    <plurals name="player_spoken_minutes">
+        <item quantity="one">%1$d minute %2$d</item>
+        <item quantity="many">%1$d minutes %2$d</item>
+        <item quantity="other">%1$d minutes %2$d</item>
+    </plurals>
 
     <!-- About -->
     <string name="about_message">Codex Ciné utilise l\'API TMDB mais n\'est ni approuvé ni certifié par TMDB.\n\nVersion %1$s</string>

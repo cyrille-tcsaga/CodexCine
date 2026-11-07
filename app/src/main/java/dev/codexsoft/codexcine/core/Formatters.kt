@@ -1,10 +1,12 @@
 package dev.codexsoft.codexcine.core
 
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.time.format.FormatStyle
+import java.util.Date
 import java.util.Locale
 
 /**
@@ -50,4 +52,25 @@ object Formatters {
             null
         }
     }
+
+    /** A playback position: `4:07`, or `1:04:07` from one hour. Negative values count as zero. */
+    fun timecode(seconds: Double): String {
+        val total = seconds.toLong().coerceAtLeast(0)
+        val hours = total / 3600
+        val minutes = (total % 3600) / 60
+        val rest = total % 60
+        return if (hours > 0) {
+            String.format(Locale.ROOT, "%d:%02d:%02d", hours, minutes, rest)
+        } else {
+            String.format(Locale.ROOT, "%d:%02d", minutes, rest)
+        }
+    }
+
+    /** The time of day, for example `22:47`. */
+    fun clock(epochMs: Long): String = SimpleDateFormat("HH:mm", FRENCH).format(Date(epochMs))
+
+    /** A playback rate, for example `1,25`. */
+    fun rate(rate: Double): String = NumberFormat.getNumberInstance(FRENCH).apply {
+        maximumFractionDigits = 2
+    }.format(rate)
 }

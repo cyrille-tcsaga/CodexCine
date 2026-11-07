@@ -5,4 +5,10 @@
     <color name="search_opaque">#F5A623</color>
     <color name="selected_background">#F5A623</color>
     <color name="default_background">#22263F</color>
+    <color name="player_scrim_top">#CC000000</color>
+    <color name="player_scrim_bottom">#E6000000</color>
+    <color name="player_panel">#E6101223</color>
+    <color name="player_focus_fill">#33FFFFFF</color>
+    <color name="player_track">#59FFFFFF</color>
+    <color name="player_buffered">#66FFFFFF</color>
 </resources>

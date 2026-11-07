@@ -71,6 +71,8 @@ class VideoDetailsFragment : DetailsSupportFragment() {
                     mediaType = mediaType ?: MediaType.MOVIE,
                     catalog = container.catalogRepository,
                     myList = container.myListRepository,
+                    vidzy = container.vidzyRepository,
+                    watchProgress = container.watchProgressRepository,
                 )
             }
         }
@@ -81,6 +83,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     private lateinit var overviewRow: DetailsOverviewRow
     private lateinit var actions: ArrayObjectAdapter
 
+    private lateinit var playAction: Action
     private var myListAction: Action? = null
     private var displayedDetails: MediaDetails? = null
 
@@ -90,7 +93,8 @@ class VideoDetailsFragment : DetailsSupportFragment() {
         backgroundController.enableParallax()
 
         actions = ArrayObjectAdapter()
-        actions.add(Action(ACTION_PLAY, getString(R.string.action_play)))
+        playAction = Action(ACTION_PLAY, getString(R.string.action_play))
+        actions.add(playAction)
 
         overviewRow = DetailsOverviewRow(initialTitle)
         overviewRow.imageDrawable = posterPlaceholder()
@@ -122,6 +126,17 @@ class VideoDetailsFragment : DetailsSupportFragment() {
             return
         }
         collectWhileStarted(viewModel.uiState, ::render)
+        collectWhileStarted(viewModel.playAvailability, ::renderPlayAvailability)
+    }
+
+    private fun renderPlayAvailability(availability: PlayAvailability) {
+        playAction.label2 = when (availability) {
+            PlayAvailability.Unknown -> null
+            PlayAvailability.Unavailable -> getString(R.string.action_play_unavailable)
+            is PlayAvailability.Available ->
+                availability.languages.joinToString(getString(R.string.separator)) { it.uppercase() }.ifEmpty { null }
+        }
+        actions.notifyArrayItemRangeChanged(actions.indexOf(playAction), 1)
     }
 
     private fun render(state: DetailsUiState) {
@@ -236,18 +251,20 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     private fun play() {
         val type = mediaType ?: return
         val title = displayedDetails?.title ?: initialTitle
-        // A show has no single video: Play starts at its first episode.
-        val isShow = type == MediaType.TV
-        startActivity(
-            PlaybackActivity.newIntent(
-                requireContext(),
-                mediaId = mediaId,
-                mediaType = type,
-                title = title,
-                seasonNumber = if (isShow) 1 else null,
-                episodeNumber = if (isShow) 1 else null,
-            ),
-        )
+        viewLifecycleOwner.lifecycleScope.launch {
+            // A show has no single video: Play starts where the viewer left off.
+            val episode = if (type == MediaType.TV) viewModel.episodeToStart() else null
+            startActivity(
+                PlaybackActivity.newIntent(
+                    requireContext(),
+                    mediaId = mediaId,
+                    mediaType = type,
+                    title = title,
+                    seasonNumber = episode?.first,
+                    episodeNumber = episode?.second,
+                ),
+            )
+        }
     }
 
     private fun openTrailer(key: String) {

@@ -70,6 +70,7 @@ class CatalogRepository(
             CategoryType.GENRE_ANIMATION,
             CategoryType.GENRE_COMEDY ->
                 api.discoverMoviesByGenre(requireNotNull(category.genreId), page = page).toMoviePage(page)
+            CategoryType.CONTINUE_WATCHING,
             CategoryType.MY_LIST,
             CategoryType.ABOUT -> MediaPage(emptyList(), page, totalPages = page)
         }

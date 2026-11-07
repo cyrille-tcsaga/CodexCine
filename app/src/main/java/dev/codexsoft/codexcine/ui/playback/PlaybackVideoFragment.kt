@@ -2,15 +2,11 @@ package dev.codexsoft.codexcine.ui.playback
 
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.view.WindowManager
 import androidx.annotation.OptIn
-import androidx.fragment.app.viewModels
 import androidx.leanback.app.VideoSupportFragment
 import androidx.leanback.app.VideoSupportFragmentGlueHost
 import androidx.leanback.media.PlaybackTransportControlGlue
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -23,28 +19,13 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.leanback.LeanbackPlayerAdapter
 import dev.codexsoft.codexcine.R
-import dev.codexsoft.codexcine.core.Extras
 import dev.codexsoft.codexcine.data.playback.PlaybackRequest
 import dev.codexsoft.codexcine.data.playback.StreamSource
-import dev.codexsoft.codexcine.domain.model.MediaType
-import dev.codexsoft.codexcine.ui.common.appContainer
-import dev.codexsoft.codexcine.ui.common.collectWhileStarted
 import dev.codexsoft.codexcine.ui.common.showErrorScreen
 
-/**
- * Asks the [dev.codexsoft.codexcine.data.playback.StreamSourceResolver] for a source, then either plays
- * it or shows why it cannot. The player only exists between onStart and onStop.
- */
+/** Plays a [StreamSource.Direct] natively. The player only exists between onStart and onStop. */
 @OptIn(UnstableApi::class)
 class PlaybackVideoFragment : VideoSupportFragment() {
-
-    private val viewModel: PlaybackViewModel by viewModels {
-        viewModelFactory {
-            initializer {
-                PlaybackViewModel(playbackRequest(), appContainer.streamSourceResolver)
-            }
-        }
-    }
 
     private var player: ExoPlayer? = null
     private var glue: PlaybackTransportControlGlue<LeanbackPlayerAdapter>? = null
@@ -59,14 +40,13 @@ class PlaybackVideoFragment : VideoSupportFragment() {
 
         override fun onPlayerError(error: PlaybackException) {
             Log.w(TAG, "Playback failed: ${error.errorCodeName}", error)
-            viewModel.onPlayerError()
+            showFailure(R.string.error_playback)
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        // Replays Ready after each onStart, which is what recreates the player released in onStop.
-        collectWhileStarted(viewModel.uiState, ::render)
+    override fun onStart() {
+        super.onStart()
+        if (player == null) startPlayer(sourceFromArguments())
     }
 
     override fun onResume() {
@@ -87,25 +67,12 @@ class PlaybackVideoFragment : VideoSupportFragment() {
         super.onStop()
     }
 
-    private fun render(state: PlaybackUiState) {
-        when (state) {
-            PlaybackUiState.Loading -> progressBarManager.show()
-            is PlaybackUiState.Ready -> {
-                progressBarManager.hide()
-                if (player == null) startPlayer(state.source)
-            }
-            PlaybackUiState.NoSource -> showFailure(R.string.error_no_source)
-            PlaybackUiState.Failed -> showFailure(R.string.error_playback)
-        }
-    }
-
     private fun showFailure(messageRes: Int) {
-        progressBarManager.hide()
         releasePlayer()
-        showErrorScreen(getString(messageRes), retryable = false, title = playbackRequest().title)
+        showErrorScreen(getString(messageRes), retryable = false, title = requireActivity().intent.toPlaybackRequest().title)
     }
 
-    private fun startPlayer(source: StreamSource) {
+    private fun startPlayer(source: StreamSource.Direct) {
         val context = requireContext()
         val httpFactory = DefaultHttpDataSource.Factory()
             .setDefaultRequestProperties(source.headers)
@@ -121,7 +88,7 @@ class PlaybackVideoFragment : VideoSupportFragment() {
             .build()
         exoPlayer.addListener(playerListener)
 
-        val request = playbackRequest()
+        val request = requireActivity().intent.toPlaybackRequest()
         glue = PlaybackTransportControlGlue(
             context,
             LeanbackPlayerAdapter(context, exoPlayer, PROGRESS_UPDATE_MS),
@@ -173,19 +140,32 @@ class PlaybackVideoFragment : VideoSupportFragment() {
         return getString(R.string.playback_episode_subtitle, season, episode)
     }
 
-    private fun playbackRequest(): PlaybackRequest {
-        val intent = requireActivity().intent
-        return PlaybackRequest(
-            mediaId = intent.getIntExtra(Extras.MEDIA_ID, Extras.NO_VALUE),
-            mediaType = MediaType.fromValue(intent.getStringExtra(Extras.MEDIA_TYPE)) ?: MediaType.MOVIE,
-            title = intent.getStringExtra(Extras.TITLE).orEmpty(),
-            seasonNumber = intent.getIntExtra(Extras.SEASON_NUMBER, Extras.NO_VALUE).takeIf { it != Extras.NO_VALUE },
-            episodeNumber = intent.getIntExtra(Extras.EPISODE_NUMBER, Extras.NO_VALUE).takeIf { it != Extras.NO_VALUE },
+    private fun sourceFromArguments(): StreamSource.Direct {
+        val args = requireArguments()
+        val headers = args.getBundle(ARG_HEADERS) ?: Bundle.EMPTY
+        return StreamSource.Direct(
+            uri = args.getString(ARG_URI).orEmpty(),
+            mimeType = args.getString(ARG_MIME_TYPE),
+            headers = headers.keySet().associateWith { headers.getString(it).orEmpty() },
         )
     }
 
-    private companion object {
-        const val TAG = "PlaybackVideoFragment"
-        const val PROGRESS_UPDATE_MS = 250
+    companion object {
+        private const val TAG = "PlaybackVideoFragment"
+        private const val PROGRESS_UPDATE_MS = 250
+        private const val ARG_URI = "uri"
+        private const val ARG_MIME_TYPE = "mime_type"
+        private const val ARG_HEADERS = "headers"
+
+        fun newInstance(source: StreamSource.Direct) = PlaybackVideoFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_URI, source.uri)
+                putString(ARG_MIME_TYPE, source.mimeType)
+                putBundle(
+                    ARG_HEADERS,
+                    Bundle().apply { source.headers.forEach { (name, value) -> putString(name, value) } },
+                )
+            }
+        }
     }
 }

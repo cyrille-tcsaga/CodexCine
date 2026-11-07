@@ -19,9 +19,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.codexsoft.codexcine.R
+import dev.codexsoft.codexcine.data.progress.WatchProgress
 import dev.codexsoft.codexcine.domain.model.CategoryType
 import dev.codexsoft.codexcine.domain.model.HomeRow
 import dev.codexsoft.codexcine.domain.model.MediaItem
+import dev.codexsoft.codexcine.domain.model.MediaType
 import dev.codexsoft.codexcine.ui.common.appContainer
 import dev.codexsoft.codexcine.ui.common.collectWhileStarted
 import dev.codexsoft.codexcine.ui.common.loadBackgroundBitmap
@@ -30,6 +32,7 @@ import dev.codexsoft.codexcine.ui.common.showErrorScreen
 import dev.codexsoft.codexcine.ui.common.titleRes
 import dev.codexsoft.codexcine.ui.error.AboutActivity
 import dev.codexsoft.codexcine.ui.grid.GridActivity
+import dev.codexsoft.codexcine.ui.playback.PlaybackActivity
 import dev.codexsoft.codexcine.ui.search.SearchActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -41,7 +44,7 @@ class MainFragment : BrowseSupportFragment() {
         viewModelFactory {
             initializer {
                 val container = appContainer
-                MainViewModel(container.catalogRepository, container.myListRepository)
+                MainViewModel(container.catalogRepository, container.myListRepository, container.watchProgressRepository)
             }
         }
     }
@@ -49,6 +52,7 @@ class MainFragment : BrowseSupportFragment() {
     private val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
     private val cardSelector = ClassPresenterSelector()
         .addClassPresenter(MediaItem::class.java, CardPresenter())
+        .addClassPresenter(WatchProgress::class.java, ContinueWatchingCardPresenter())
         .addClassPresenter(ActionCard::class.java, MoreCardPresenter())
 
     private lateinit var backgroundManager: BackgroundManager
@@ -75,6 +79,7 @@ class MainFragment : BrowseSupportFragment() {
         onItemViewClickedListener = OnItemViewClickedListener { card, item, _, _ ->
             when (item) {
                 is MediaItem -> openMediaItem(item, card)
+                is WatchProgress -> resume(item)
                 is ActionCard.SeeAll -> startActivity(
                     GridActivity.newIntent(requireContext(), item.category, item.categoryTitle),
                 )
@@ -82,7 +87,13 @@ class MainFragment : BrowseSupportFragment() {
             }
         }
         onItemViewSelectedListener = OnItemViewSelectedListener { _, item, _, _ ->
-            updateBackground((item as? MediaItem)?.backdropUrl)
+            updateBackground(
+                when (item) {
+                    is MediaItem -> item.backdropUrl
+                    is WatchProgress -> item.backdropUrl
+                    else -> null
+                },
+            )
         }
 
         collectWhileStarted(viewModel.uiState, ::render)
@@ -90,7 +101,7 @@ class MainFragment : BrowseSupportFragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.refreshMyList()
+        viewModel.refreshLocalRows()
     }
 
     override fun onDestroyView() {
@@ -129,6 +140,8 @@ class MainFragment : BrowseSupportFragment() {
                 rowsAdapter.add(index, createRow(row))
             } else if (row.category == CategoryType.MY_LIST) {
                 (rowAt(index).adapter as ArrayObjectAdapter).setItems(row.items, MediaItemDiff)
+            } else if (row.category == CategoryType.CONTINUE_WATCHING) {
+                (rowAt(index).adapter as ArrayObjectAdapter).setItems(row.continueWatching, WatchProgressDiff)
             }
         }
     }
@@ -139,11 +152,27 @@ class MainFragment : BrowseSupportFragment() {
         val title = getString(row.category.titleRes)
         val cards = ArrayObjectAdapter(cardSelector)
         cards.addAll(0, row.items)
+        cards.addAll(0, row.continueWatching)
         when {
             row.category == CategoryType.ABOUT -> cards.add(ActionCard.About)
             row.category.isRemote -> cards.add(ActionCard.SeeAll(row.category, title))
         }
         return ListRow(HeaderItem(row.category.headerId, title), cards)
+    }
+
+    private fun resume(progress: WatchProgress) {
+        val type = progress.type ?: return
+        startActivity(
+            PlaybackActivity.newIntent(
+                requireContext(),
+                mediaId = progress.tmdbId,
+                mediaType = type,
+                title = progress.title,
+                seasonNumber = progress.season.takeIf { type == MediaType.TV },
+                episodeNumber = progress.episode.takeIf { type == MediaType.TV },
+                autoResume = true,
+            ),
+        )
     }
 
     /** Waits for the selection to settle, so scrolling through a row does not load every backdrop. */
@@ -170,6 +199,12 @@ class MainFragment : BrowseSupportFragment() {
             oldItem.id == newItem.id && oldItem.mediaType == newItem.mediaType
 
         override fun areContentsTheSame(oldItem: MediaItem, newItem: MediaItem) = oldItem == newItem
+    }
+
+    private object WatchProgressDiff : DiffCallback<WatchProgress>() {
+        override fun areItemsTheSame(oldItem: WatchProgress, newItem: WatchProgress) = oldItem.key == newItem.key
+
+        override fun areContentsTheSame(oldItem: WatchProgress, newItem: WatchProgress) = oldItem == newItem
     }
 
     private companion object {

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.codexsoft.codexcine.core.AppResult
 import dev.codexsoft.codexcine.core.ErrorKind
+import dev.codexsoft.codexcine.data.progress.WatchProgress
+import dev.codexsoft.codexcine.data.progress.WatchProgressRepository
 import dev.codexsoft.codexcine.data.repository.CatalogRepository
 import dev.codexsoft.codexcine.data.repository.MyListRepository
 import dev.codexsoft.codexcine.domain.model.CategoryType
@@ -26,6 +28,7 @@ sealed interface MainUiState {
 class MainViewModel(
     private val catalog: CatalogRepository,
     private val myList: MyListRepository,
+    private val watchProgress: WatchProgressRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MainUiState>(MainUiState.Loading)
@@ -33,15 +36,18 @@ class MainViewModel(
 
     private val loadedRows = sortedMapOf<CategoryType, List<MediaItem>>()
     private var myListItems: List<MediaItem> = emptyList()
+    private var continueWatching: List<WatchProgress> = emptyList()
 
     init {
         loadCatalog()
     }
 
-    /** Called from onResume, because the list may have been edited on another screen. */
-    fun refreshMyList() {
+    /** Called from onResume, because another screen may have edited the list or saved progress. */
+    fun refreshLocalRows() {
         viewModelScope.launch {
             myListItems = myList.currentItems()
+            // The debug harness saves under an id that does not exist on TMDB.
+            continueWatching = watchProgress.currentItems().filter { it.tmdbId > 0 }
             publishRows()
         }
     }
@@ -71,6 +77,9 @@ class MainViewModel(
     private fun publishRows() {
         if (loadedRows.isEmpty()) return
         val rows = buildList {
+            if (continueWatching.isNotEmpty()) {
+                add(HomeRow(CategoryType.CONTINUE_WATCHING, emptyList(), continueWatching))
+            }
             if (myListItems.isNotEmpty()) add(HomeRow(CategoryType.MY_LIST, myListItems))
             loadedRows.forEach { (category, items) -> add(HomeRow(category, items)) }
             add(HomeRow(CategoryType.ABOUT, emptyList()))

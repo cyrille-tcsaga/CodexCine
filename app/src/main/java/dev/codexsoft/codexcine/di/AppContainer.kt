@@ -2,15 +2,23 @@ package dev.codexsoft.codexcine.di
 
 import android.content.Context
 import dev.codexsoft.codexcine.BuildConfig
-import dev.codexsoft.codexcine.data.playback.NoStreamSourceResolver
 import dev.codexsoft.codexcine.data.playback.SampleStreamResolver
 import dev.codexsoft.codexcine.data.playback.StreamSourceResolver
+import dev.codexsoft.codexcine.data.progress.WatchProgressRepository
 import dev.codexsoft.codexcine.data.remote.RetryInterceptor
 import dev.codexsoft.codexcine.data.remote.TmdbApi
 import dev.codexsoft.codexcine.data.remote.TmdbAuthInterceptor
 import dev.codexsoft.codexcine.data.remote.TmdbJson
 import dev.codexsoft.codexcine.data.repository.CatalogRepository
 import dev.codexsoft.codexcine.data.repository.MyListRepository
+import dev.codexsoft.codexcine.data.vidzy.VidzyApi
+import dev.codexsoft.codexcine.data.vidzy.VidzyJson
+import dev.codexsoft.codexcine.data.vidzy.VidzyRepository
+import dev.codexsoft.codexcine.data.vidzy.VidzyStreamSourceResolver
+import dev.codexsoft.codexcine.data.vidzy.VidzyUrlBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.Cache
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -50,9 +58,39 @@ class AppContainer(context: Context) {
 
     val myListRepository: MyListRepository by lazy { MyListRepository(appContext) }
 
-    /** Register a real implementation here to plug in an actual video source. */
+    val watchProgressRepository: WatchProgressRepository by lazy { WatchProgressRepository(appContext) }
+
+    /**
+     * For writes that must outlive the screen requesting them, such as saving progress while the
+     * player closes. Single-threaded so that writes are applied in the order they were requested.
+     */
+    val persistenceScope: CoroutineScope by lazy {
+        CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
+    }
+
+    /** Deliberately separate from [okHttpClient]: the TMDB token must never reach Vidzy. */
+    private val vidzyHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .apply { networkLoggingInterceptor()?.let(::addInterceptor) }
+            .build()
+    }
+
+    private val vidzyApi: Lazy<VidzyApi> = lazy {
+        Retrofit.Builder()
+            .baseUrl(VidzyUrlBuilder.BASE_URL)
+            .client(vidzyHttpClient)
+            .addConverterFactory(VidzyJson.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(VidzyApi::class.java)
+    }
+
+    val vidzyRepository: VidzyRepository by lazy { VidzyRepository(vidzyApi) }
+
+    /** The active video source. To plug in another provider, register its resolver here. */
     val streamSourceResolver: StreamSourceResolver by lazy {
-        if (BuildConfig.USE_SAMPLE_STREAM) SampleStreamResolver() else NoStreamSourceResolver()
+        if (BuildConfig.USE_SAMPLE_STREAM) SampleStreamResolver() else VidzyStreamSourceResolver(vidzyRepository)
     }
 
     private companion object {

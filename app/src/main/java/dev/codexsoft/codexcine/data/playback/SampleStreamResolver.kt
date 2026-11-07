@@ -2,7 +2,7 @@ package dev.codexsoft.codexcine.data.playback
 
 /** Plays a public test clip for every title, to verify the player end to end. Debug builds only. */
 class SampleStreamResolver : StreamSourceResolver {
-    override suspend fun resolve(request: PlaybackRequest): StreamSource = StreamSource(
+    override suspend fun resolve(request: PlaybackRequest): StreamSource = StreamSource.Direct(
         uri = SAMPLE_URI,
         mimeType = "video/mp4",
     )

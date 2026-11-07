@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.codexsoft.codexcine.core.AppResult
 import dev.codexsoft.codexcine.core.ErrorKind
+import dev.codexsoft.codexcine.data.progress.WatchProgressRepository
 import dev.codexsoft.codexcine.data.repository.CatalogRepository
 import dev.codexsoft.codexcine.data.repository.MyListRepository
+import dev.codexsoft.codexcine.data.vidzy.VidzyAvailability
+import dev.codexsoft.codexcine.data.vidzy.VidzyRepository
 import dev.codexsoft.codexcine.domain.model.MediaDetails
 import dev.codexsoft.codexcine.domain.model.MediaItem
 import dev.codexsoft.codexcine.domain.model.MediaType
@@ -20,17 +23,35 @@ sealed interface DetailsUiState {
     data class Error(val kind: ErrorKind) : DetailsUiState
 }
 
+/** What the provider said about this title. Unknown also covers a failed request. */
+sealed interface PlayAvailability {
+    data object Unknown : PlayAvailability
+    data class Available(val languages: List<String>) : PlayAvailability
+    data object Unavailable : PlayAvailability
+}
+
 class DetailsViewModel(
     private val mediaId: Int,
     private val mediaType: MediaType,
     private val catalog: CatalogRepository,
     private val myList: MyListRepository,
+    private val vidzy: VidzyRepository,
+    private val watchProgress: WatchProgressRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<DetailsUiState>(DetailsUiState.Loading)
     val uiState: StateFlow<DetailsUiState> = _uiState.asStateFlow()
 
+    private val _playAvailability = MutableStateFlow<PlayAvailability>(PlayAvailability.Unknown)
+    val playAvailability: StateFlow<PlayAvailability> = _playAvailability.asStateFlow()
+
     init {
+        viewModelScope.launch {
+            _playAvailability.value = when (val result = vidzy.availability(mediaId)) {
+                is AppResult.Error -> PlayAvailability.Unknown
+                is AppResult.Success -> result.data.toPlayAvailability()
+            }
+        }
         viewModelScope.launch {
             when (val result = catalog.details(mediaId, mediaType)) {
                 is AppResult.Error -> _uiState.value = DetailsUiState.Error(result.kind)
@@ -40,6 +61,15 @@ class DetailsViewModel(
             }
         }
     }
+
+    /** The (season, episode) a show's Play button starts: the last one watched, or else the first. */
+    suspend fun episodeToStart(): Pair<Int, Int> {
+        val saved = watchProgress.latestEpisode(mediaId) ?: return 1 to 1
+        return saved.season to saved.episode
+    }
+
+    private fun VidzyAvailability.toPlayAvailability() =
+        if (isAvailable) PlayAvailability.Available(languages) else PlayAvailability.Unavailable
 
     fun toggleMyList() {
         val details = (uiState.value as? DetailsUiState.Content)?.details ?: return

@@ -1,6 +1,7 @@
 package dev.codexsoft.codexcine.data.playback
 
 import dev.codexsoft.codexcine.domain.model.MediaType
+import java.io.IOException
 
 data class PlaybackRequest(
     val mediaId: Int,
@@ -10,14 +11,32 @@ data class PlaybackRequest(
     val episodeNumber: Int? = null,
 )
 
-data class StreamSource(
-    val uri: String,
-    val mimeType: String? = null, // e.g. MimeTypes.APPLICATION_M3U8
-    val headers: Map<String, String> = emptyMap(),
-)
+sealed interface StreamSource {
+
+    /** A media file or stream played natively by Media3. */
+    data class Direct(
+        val uri: String,
+        val mimeType: String? = null, // e.g. MimeTypes.APPLICATION_M3U8
+        val headers: Map<String, String> = emptyMap(),
+    ) : StreamSource
+
+    /** A web page that embeds its own player, played in a hardened WebView. */
+    data class WebEmbed(
+        val url: String,
+        val languages: List<String> = emptyList(), // e.g. ["vf", "vostfr"], display only
+        val providerName: String,
+    ) : StreamSource
+}
+
+/** The provider could not be reached, which unlike a null source is worth retrying. */
+class StreamServiceException(message: String, cause: Throwable? = null) : IOException(message, cause)
 
 /** The single extension point for playback: implement it and register it in `AppContainer`. */
 interface StreamSourceResolver {
-    /** Returns a playable source, or null when no source is available. */
+    /**
+     * Returns a playable source, or null when the provider has nothing for this title.
+     *
+     * @throws StreamServiceException when the provider cannot be reached.
+     */
     suspend fun resolve(request: PlaybackRequest): StreamSource?
 }

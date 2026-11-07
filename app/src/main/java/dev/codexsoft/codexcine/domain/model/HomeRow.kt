@@ -1,7 +1,10 @@
 package dev.codexsoft.codexcine.domain.model
 
+import dev.codexsoft.codexcine.data.progress.WatchProgress
+
 /** Home screen categories. Declaration order is the display order. */
 enum class CategoryType(val genreId: Int? = null) {
+    CONTINUE_WATCHING,
     MY_LIST,
     TRENDING,
     POPULAR_MOVIES,
@@ -17,12 +20,13 @@ enum class CategoryType(val genreId: Int? = null) {
     ABOUT;
 
     /** True for the categories that are loaded from TMDB and can be paged. */
-    val isRemote: Boolean get() = this != MY_LIST && this != ABOUT
+    val isRemote: Boolean get() = this != CONTINUE_WATCHING && this != MY_LIST && this != ABOUT
 }
 
 data class HomeRow(
     val category: CategoryType,
     val items: List<MediaItem>,
+    val continueWatching: List<WatchProgress> = emptyList(),
 )
 
 data class MediaPage(

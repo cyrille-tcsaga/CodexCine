@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.codexsoft.codexcine.data.playback.PlaybackRequest
+import dev.codexsoft.codexcine.data.playback.StreamServiceException
 import dev.codexsoft.codexcine.data.playback.StreamSource
 import dev.codexsoft.codexcine.data.playback.StreamSourceResolver
 import kotlinx.coroutines.CancellationException
@@ -19,7 +20,10 @@ sealed interface PlaybackUiState {
     /** The resolver has nothing to play for this title. */
     data object NoSource : PlaybackUiState
 
-    /** Resolving the source or playing it failed. */
+    /** The provider could not be reached. Retrying may help. */
+    data object ServiceUnreachable : PlaybackUiState
+
+    /** Resolving the source failed in an unexpected way. */
     data object Failed : PlaybackUiState
 }
 
@@ -37,15 +41,14 @@ class PlaybackViewModel(
                 resolver.resolve(request)?.let { PlaybackUiState.Ready(it) } ?: PlaybackUiState.NoSource
             } catch (e: CancellationException) {
                 throw e
+            } catch (e: StreamServiceException) {
+                Log.w(TAG, "Provider unreachable for ${request.title}", e)
+                PlaybackUiState.ServiceUnreachable
             } catch (e: Exception) {
                 Log.w(TAG, "Could not resolve a source for ${request.title}", e)
                 PlaybackUiState.Failed
             }
         }
-    }
-
-    fun onPlayerError() {
-        _uiState.value = PlaybackUiState.Failed
     }
 
     private companion object {

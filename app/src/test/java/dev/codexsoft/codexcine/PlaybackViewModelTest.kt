@@ -2,6 +2,7 @@ package dev.codexsoft.codexcine
 
 import dev.codexsoft.codexcine.data.playback.NoStreamSourceResolver
 import dev.codexsoft.codexcine.data.playback.PlaybackRequest
+import dev.codexsoft.codexcine.data.playback.StreamServiceException
 import dev.codexsoft.codexcine.data.playback.StreamSource
 import dev.codexsoft.codexcine.data.playback.StreamSourceResolver
 import dev.codexsoft.codexcine.domain.model.MediaType
@@ -45,7 +46,7 @@ class PlaybackViewModelTest {
     @Test
     fun `stays loading until the resolver answers, then is ready`() {
         val answer = CompletableDeferred<StreamSource?>()
-        val source = StreamSource(uri = "https://example.org/video.m3u8")
+        val source = StreamSource.Direct(uri = "https://example.org/video.m3u8")
         val viewModel = PlaybackViewModel(
             request,
             object : StreamSourceResolver {
@@ -89,16 +90,15 @@ class PlaybackViewModelTest {
     }
 
     @Test
-    fun `a player error replaces the ready state`() {
+    fun `an unreachable provider has its own state`() {
         val viewModel = PlaybackViewModel(
             request,
             object : StreamSourceResolver {
-                override suspend fun resolve(request: PlaybackRequest) = StreamSource(uri = "https://example.org/v.mp4")
+                override suspend fun resolve(request: PlaybackRequest): StreamSource? =
+                    throw StreamServiceException("offline")
             },
         )
 
-        viewModel.onPlayerError()
-
-        assertEquals(PlaybackUiState.Failed, viewModel.uiState.value)
+        assertEquals(PlaybackUiState.ServiceUnreachable, viewModel.uiState.value)
     }
 }

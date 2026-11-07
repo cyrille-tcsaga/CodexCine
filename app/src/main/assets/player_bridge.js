@@ -5,6 +5,7 @@
   "use strict";
 
   var NONCE = "__NONCE__";
+  var DIAGNOSTICS = __DIAGNOSTICS__;
   var STATE_INTERVAL_MS = 1000;
   var RESCAN_THROTTLE_MS = 500;
   var RESCAN_INTERVAL_MS = 2000;
@@ -22,6 +23,7 @@
   var stateTimer = null;
   var styleInjected = false;
   var scanPending = false;
+  var observer = null;
 
   function post(message) {
     try {
@@ -126,6 +128,11 @@
         attach(video);
         if (!best || isBetter(video, best)) best = video;
       });
+      // A full scan walks the whole page: once the film itself is found, stop watching every change.
+      if (best && finite(best.duration) >= 60 && observer) {
+        observer.disconnect();
+        observer = null;
+      }
       if (best === main) return;
       main = best;
       if (main) {
@@ -205,13 +212,35 @@
   };
 
   try {
-    new MutationObserver(scheduleScan).observe(document, { childList: true, subtree: true });
+    observer = new MutationObserver(scheduleScan);
+    observer.observe(document, { childList: true, subtree: true });
   } catch (e) {}
   document.addEventListener("DOMContentLoaded", scan);
   var rescans = setInterval(scan, RESCAN_INTERVAL_MS);
   setTimeout(function () {
     clearInterval(rescans);
   }, RESCAN_PERIOD_MS);
+
+  // Debug builds only: one line every 15 s in logcat ("adb logcat | grep CodexDiag"), to see on a real box
+  // whether the page plays HLS itself or through JavaScript, how many frames drop and what the stream answers.
+  if (DIAGNOSTICS) {
+    setInterval(function () {
+      try {
+        if (!main) return;
+        var quality = main.getVideoPlaybackQuality ? main.getVideoPlaybackQuality() : {};
+        var codes = {};
+        (performance.getEntriesByType("resource") || []).forEach(function (entry) {
+          if (!/\/hls2\//.test(entry.name)) return;
+          var key = String(entry.responseStatus || "?") + (/[?&]gk=/.test(entry.name) ? "+gk" : "");
+          codes[key] = (codes[key] || 0) + 1;
+        });
+        console.log("CodexDiag mode=" + (/^blob:/.test(main.currentSrc) ? "js" : "native") +
+          " t=" + Math.round(finite(main.currentTime)) +
+          " dropped=" + quality.droppedVideoFrames + "/" + quality.totalVideoFrames +
+          " segments=" + JSON.stringify(codes));
+      } catch (e) {}
+    }, 15000);
+  }
 
   post({ t: "ready" });
   scan();

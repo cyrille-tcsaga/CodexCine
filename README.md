@@ -134,6 +134,24 @@ Sans `Active video frame set`, la vidéo n'est plus dans un `<video>` accessible
 *shadow root* fermé, ou la page attend une action. Si des publicités gênent, ajoutez leurs hôtes à
 `app/src/main/assets/blocklist.txt`, sans jamais y mettre l'hôte qui sert la vidéo.
 
+### Si la lecture saccade
+
+Le lecteur web de Vidzy décode le flux en JavaScript, ce qui est lourd pour un boîtier TV. Deux pistes :
+
+1. **Mode TV.** Ajoutez `WEB_PLAYER_TV_MODE=true` à `local.properties`, recompilez et réinstallez. L'application
+   se déclare alors comme téléviseur, et la page laisse le WebView lire le flux lui-même, sans passer par
+   JavaScript. Sur l'émulateur, le résultat n'a pas été concluant : comparez sur votre boîtier.
+2. **Diagnostic** (versions `debug`). Toutes les 15 s, une ligne indique le mode de lecture (`js` ou `native`),
+   les images perdues et les codes renvoyés par les segments vidéo :
+
+   ```bash
+   adb logcat | grep -E "CodexDiag|Refused a resource"
+   ```
+
+   Beaucoup d'images perdues signalent un boîtier trop sollicité. Des codes autres que `200` signalent un
+   problème côté serveur. `Refused a resource` liste les ressources dont le certificat a été refusé : elles
+   sont simplement ignorées, sauf si c'est la page de lecture elle-même.
+
 ### Changer de fournisseur
 
 Implémentez `StreamSourceResolver`

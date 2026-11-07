@@ -46,6 +46,13 @@ class MainFrameHostPolicy(private val allowedHosts: Set<String>) {
     }
 }
 
+/** A certificate error is fatal only for the page being displayed, or when it cannot be told apart. */
+internal fun isFatalSslError(failedUrl: String?, pageUrl: String?): Boolean {
+    val failedHost = failedUrl?.toHttpUrlOrNull()?.host ?: return true
+    val pageHost = pageUrl?.toHttpUrlOrNull()?.host ?: return true
+    return failedHost == pageHost
+}
+
 /** Only frames using HTTP(S) may load. This keeps `intent:` and `market:` links from a subframe out. */
 internal fun isAllowedSubframeUrl(url: String): Boolean =
     url.startsWith("https://", ignoreCase = true) || url.startsWith("http://", ignoreCase = true)
@@ -103,7 +110,8 @@ class HardenedWebViewFactory(
             builtInZoomControls = false
             mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
             // Some hosts reject WebViews. The rest of the agent string stays truthful.
-            userAgentString = WebSettings.getDefaultUserAgent(appContext).replace("; wv", "")
+            userAgentString = WebSettings.getDefaultUserAgent(appContext).replace("; wv", "") +
+                if (BuildConfig.WEB_PLAYER_TV_MODE) TV_USER_AGENT_SUFFIX else ""
         }
         if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_ENABLE)) {
             WebSettingsCompat.setSafeBrowsingEnabled(webView.settings, true)
@@ -147,9 +155,12 @@ class HardenedWebViewFactory(
             if (request.isForMainFrame) events.onPageFailed(view, PlayerFailure.PAGE_ERROR)
         }
 
+        // The request is always refused. Only the page itself failing ends playback: an ad or tracker
+        // with a certificate the device rejects (common on older boxes) must not take the film down.
         override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
             handler.cancel()
-            events.onPageFailed(view, PlayerFailure.SSL_ERROR)
+            Log.w(TAG, "Refused a resource from ${error.url?.toHttpUrlOrNull()?.host}: TLS error ${error.primaryError}")
+            if (isFatalSslError(error.url, view.url)) events.onPageFailed(view, PlayerFailure.SSL_ERROR)
         }
 
         // The default interstitial needs a pointer, which a TV remote does not have.
@@ -220,5 +231,11 @@ class HardenedWebViewFactory(
     companion object {
         private const val TAG = "HardenedWebView"
         const val BLANK_PAGE = "about:blank"
+
+        /**
+         * Declares the device class. The provider's page then lets the WebView play HLS itself instead
+         * of demultiplexing it in JavaScript. See DECISIONS.md.
+         */
+        private const val TV_USER_AGENT_SUFFIX = " SMART-TV"
     }
 }

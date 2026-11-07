@@ -15,6 +15,7 @@ val localProperties = Properties().apply {
 }
 val tmdbAccessToken = localProperties.getProperty("TMDB_ACCESS_TOKEN").orEmpty().trim()
 val useSampleStream = localProperties.getProperty("USE_SAMPLE_STREAM")?.trim().toBoolean()
+val webPlayerTvMode = localProperties.getProperty("WEB_PLAYER_TV_MODE")?.trim().toBoolean()
 
 android {
     namespace = "dev.codexsoft.codexcine"
@@ -28,6 +29,7 @@ android {
         versionName = "1.0"
 
         buildConfigField("String", "TMDB_ACCESS_TOKEN", "\"$tmdbAccessToken\"")
+        buildConfigField("boolean", "WEB_PLAYER_TV_MODE", webPlayerTvMode.toString())
     }
 
     buildFeatures {

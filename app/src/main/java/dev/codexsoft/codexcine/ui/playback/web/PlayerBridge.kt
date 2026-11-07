@@ -8,6 +8,7 @@ import androidx.webkit.JavaScriptReplyProxy
 import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import dev.codexsoft.codexcine.BuildConfig
 import java.util.UUID
 
 /**
@@ -35,7 +36,10 @@ class PlayerBridge(
         WebViewCompat.addWebMessageListener(webView, OBJECT_NAME, ORIGIN_RULES) { _, message, _, _, proxy ->
             onPageMessage(message, proxy)
         }
-        WebViewCompat.addDocumentStartJavaScript(webView, script.replace(NONCE_PLACEHOLDER, nonce), ORIGIN_RULES)
+        val prepared = script
+            .replace(NONCE_PLACEHOLDER, nonce)
+            .replace(DIAGNOSTICS_PLACEHOLDER, BuildConfig.DEBUG.toString())
+        WebViewCompat.addDocumentStartJavaScript(webView, prepared, ORIGIN_RULES)
     }
 
     fun send(command: PageCommand) {
@@ -68,6 +72,7 @@ class PlayerBridge(
         private const val OBJECT_NAME = "CodexBridge"
         private const val SCRIPT_ASSET = "player_bridge.js"
         private const val NONCE_PLACEHOLDER = "__NONCE__"
+        private const val DIAGNOSTICS_PLACEHOLDER = "__DIAGNOSTICS__"
         private val ORIGIN_RULES = setOf("*")
 
         /** False on an outdated WebView, where the player falls back to basic mode. */

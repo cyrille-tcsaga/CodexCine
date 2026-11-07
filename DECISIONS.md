@@ -109,6 +109,31 @@ overlay. `info` would duplicate the overlay's title.
   nor navigate to them. The harness adds 7 presses (broken page) and 9 presses (basic mode) to the
   brief's 5.
 
+### Playback smoothness (follow-up)
+
+Reported on the TV: playback stops, buffers, jumps back a second or two, and resumes. The emulator decodes
+in software and is too slow to reproduce it faithfully, so these are the findings and what changed.
+
+- **A TLS error on any resource stopped playback.** `onReceivedSslError` fired for ads and trackers with
+  certificates the box rejected, and every one of them ended on "La connexion à la source n'est pas
+  sécurisée". The request is still always cancelled, but only the displayed page failing is fatal now
+  (`isFatalSslError`). The refused host is logged.
+- **The bridge kept rescanning the page.** video.js changes the DOM several times a second, and each change
+  triggered a full walk of the document every 500 ms for the whole film, on the thread that also feeds the
+  video. The `MutationObserver` now disconnects once a video of at least 60 s is found.
+- **The page demultiplexes HLS in JavaScript** (video.js VHS, `blob:` source) unless the agent names a TV
+  (`smart-tv`, `googletv`…), in which case it lets the WebView play the HLS itself. `WEB_PLAYER_TV_MODE`
+  adds `SMART-TV` to the agent. It is off by default: on the emulator one run advanced 2.5 times further
+  than without it, and another stalled, so it has to be compared on the real box. The token describes the
+  device class and names no browser, so the rule against impersonating a browser still holds.
+- **No native playback of the extracted stream.** The page does expose its HLS URL, and Media3 played it,
+  but the host only serves the first segments without a `gk` key. The page obtains that key from
+  `gate.php` by sending a browser fingerprint (canvas and WebGL hashes, screen, CPU count). Producing one
+  outside a browser would mean forging that fingerprint to get past a check built to stop exactly this,
+  which was ruled out. The prototype was removed rather than left as dead code.
+- **Debug diagnostics.** In debug builds the script logs, every 15 s, the playback mode, dropped frames and
+  the HTTP status of the stream segments (`CodexDiag` in logcat).
+
 ### Known limits
 
 - **Mixed content is effectively off.** `MIXED_CONTENT_COMPATIBILITY_MODE` is set as requested, but

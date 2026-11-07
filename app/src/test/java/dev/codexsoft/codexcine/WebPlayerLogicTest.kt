@@ -22,6 +22,7 @@ import dev.codexsoft.codexcine.ui.playback.web.RevealFocus
 import dev.codexsoft.codexcine.ui.playback.web.SeekAccelerator
 import dev.codexsoft.codexcine.ui.playback.web.VideoState
 import dev.codexsoft.codexcine.ui.playback.web.isAllowedSubframeUrl
+import dev.codexsoft.codexcine.ui.playback.web.isFatalSslError
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -498,6 +499,16 @@ class HostPolicyTest {
             "about:blank",
             "",
         ).forEach { assertFalse(it, policy.isAllowed(it)) }
+    }
+
+    @Test
+    fun `a certificate error only ends playback for the page itself`() {
+        val page = "https://vidzy.org/movie/550?autoplay=1"
+        assertTrue(isFatalSslError("https://vidzy.org/movie/550", page))
+        assertFalse(isFatalSslError("https://ads.example/pixel.gif", page))
+        assertFalse(isFatalSslError("https://u14.vidzy.cc/hls2/a.ts", page))
+        assertTrue("unknown failed url", isFatalSslError(null, page))
+        assertTrue("unknown page", isFatalSslError("https://ads.example/x", null))
     }
 
     @Test

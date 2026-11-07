@@ -5,6 +5,8 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
+private const val LATEST_MIN_VOTES = 10
+
 interface TmdbApi {
 
     @GET("configuration")
@@ -40,6 +42,24 @@ interface TmdbApi {
         @Query("sort_by") sortBy: String = "popularity.desc",
         @Query("page") page: Int = 1
     ): TmdbPaginatedResponse<TmdbMovieDto>
+
+    /** Latest releases up to [releasedBefore] (YYYY-MM-DD). The vote floor keeps out obscure entries. */
+    @GET("discover/movie")
+    suspend fun discoverLatestMovies(
+        @Query("primary_release_date.lte") releasedBefore: String,
+        @Query("sort_by") sortBy: String = "primary_release_date.desc",
+        @Query("vote_count.gte") minVotes: Int = LATEST_MIN_VOTES,
+        @Query("page") page: Int = 1
+    ): TmdbPaginatedResponse<TmdbMovieDto>
+
+    /** Latest shows first aired up to [airedBefore] (YYYY-MM-DD). The vote floor keeps out obscure entries. */
+    @GET("discover/tv")
+    suspend fun discoverLatestTv(
+        @Query("first_air_date.lte") airedBefore: String,
+        @Query("sort_by") sortBy: String = "first_air_date.desc",
+        @Query("vote_count.gte") minVotes: Int = LATEST_MIN_VOTES,
+        @Query("page") page: Int = 1
+    ): TmdbPaginatedResponse<TmdbTvDto>
 
     @GET("movie/{id}")
     suspend fun getMovieDetails(

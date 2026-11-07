@@ -10,10 +10,6 @@
         <item name="rowHeaderStyle">@style/CodexCine.Row.Header</item>
         <item name="imageCardViewTitleStyle">@style/CodexCine.Card.Title</item>
         <item name="imageCardViewContentStyle">@style/CodexCine.Card.Content</item>
-        <item name="detailsDescriptionTitleStyle">@style/CodexCine.Details.Title</item>
-        <item name="detailsDescriptionSubtitleStyle">@style/CodexCine.Details.Subtitle</item>
-        <item name="detailsDescriptionBodyStyle">@style/CodexCine.Details.Body</item>
-        <item name="detailsActionButtonStyle">@style/CodexCine.Details.Action</item>
         <item name="errorMessageStyle">@style/CodexCine.ErrorMessage</item>
     </style>
 

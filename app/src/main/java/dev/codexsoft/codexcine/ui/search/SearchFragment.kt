@@ -49,8 +49,8 @@ class SearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchResu
         )
         setSearchResultProvider(this)
         setOnItemViewClickedListener(
-            OnItemViewClickedListener { card, item, _, _ ->
-                if (item is MediaItem) openMediaItem(item, card)
+            OnItemViewClickedListener { _, item, _, _ ->
+                if (item is MediaItem) openMediaItem(item)
             },
         )
     }

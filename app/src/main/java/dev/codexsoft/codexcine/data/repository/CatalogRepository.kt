@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import java.time.LocalDate
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
@@ -66,6 +67,8 @@ class CatalogRepository(
             CategoryType.POPULAR_TV -> api.getPopularTv(page).toTvPage(page)
             CategoryType.TOP_RATED_TV -> api.getTopRatedTv(page).toTvPage(page)
             CategoryType.ON_THE_AIR_TV -> api.getOnTheAirTv(page).toTvPage(page)
+            CategoryType.LATEST_MOVIES -> api.discoverLatestMovies(today(), page = page).toMoviePage(page)
+            CategoryType.LATEST_TV -> api.discoverLatestTv(today(), page = page).toTvPage(page)
             CategoryType.GENRE_ACTION,
             CategoryType.GENRE_ANIMATION,
             CategoryType.GENRE_COMEDY ->
@@ -95,6 +98,9 @@ class CatalogRepository(
     suspend fun person(id: Int): AppResult<PersonDetails> = call {
         api.getPersonDetails(id).toPersonDetails()
     }
+
+    /** Today's date as TMDB filters expect it, so the "latest" rows leave out announced titles. */
+    private fun today(): String = LocalDate.now().toString()
 
     /** Fetches the image base URL once per process. A failure keeps the built-in default. */
     private suspend fun ensureConfiguration() {

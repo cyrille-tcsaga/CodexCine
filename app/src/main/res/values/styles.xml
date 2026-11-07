@@ -50,43 +50,27 @@
         <item name="android:textColor">@color/brand_mist</item>
     </style>
 
-    <!-- Details -->
-    <style name="CodexCine.Details.Title" parent="Widget.Leanback.DetailsDescriptionTitleStyle">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Details.Title</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Details.Title" parent="TextAppearance.Leanback.DetailsDescriptionTitle">
-        <item name="android:fontFamily">@font/brand_display</item>
-        <item name="android:textFontWeight">700</item>
-        <item name="android:textColor">@color/brand_ivory</item>
-    </style>
-    <style name="CodexCine.Details.Subtitle" parent="Widget.Leanback.DetailsDescriptionSubtitleStyle">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Details.Subtitle</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Details.Subtitle" parent="TextAppearance.Leanback.DetailsDescriptionSubtitle">
-        <item name="android:fontFamily">@font/brand_text</item>
-        <item name="android:textFontWeight">500</item>
-        <item name="android:textColor">@color/brand_amber</item>
-    </style>
-    <style name="CodexCine.Details.Body" parent="Widget.Leanback.DetailsDescriptionBodyStyle">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Details.Body</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Details.Body" parent="TextAppearance.Leanback.DetailsDescriptionBody">
-        <item name="android:fontFamily">@font/brand_text</item>
-        <item name="android:textColor">@color/brand_mist</item>
-    </style>
-
-    <!-- Rounded action buttons on the details screen -->
-    <style name="CodexCine.Details.Action" parent="Widget.Leanback.DetailsActionButtonStyle">
+    <!-- Rounded buttons laid over artwork (details screen) -->
+    <style name="CodexCine.HeroButton" parent="android:Widget.Material.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">52dp</item>
         <item name="android:background">@drawable/bg_pill</item>
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Details.Action</item>
-        <item name="android:textColor">@color/on_pill</item>
+        <item name="android:drawablePadding">10dp</item>
         <item name="android:drawableTint">@color/on_pill</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Details.Action" parent="TextAppearance.Leanback.DetailsActionButton">
         <item name="android:fontFamily">@font/brand_display</item>
-        <item name="android:textFontWeight">700</item>
+        <item name="android:paddingStart">22dp</item>
+        <item name="android:paddingEnd">28dp</item>
+        <item name="android:stateListAnimator">@null</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/on_pill</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+    <style name="CodexCine.HeroButton.Primary">
+        <item name="android:background">@drawable/bg_pill_primary</item>
+        <item name="android:drawableStart">@drawable/ic_player_play</item>
+        <item name="android:drawableTint">@color/brand_night</item>
+        <item name="android:textColor">@color/brand_night</item>
     </style>
 
     <!-- Error and about screens -->

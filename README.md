@@ -178,12 +178,23 @@ l'application (licence SIL OFL, voir `app/src/main/assets/licenses`).
 ./gradlew :app:assembleDebug        # APK de débogage
 ./gradlew :app:testDebugUnitTest    # tests unitaires
 ./gradlew :app:lintDebug            # analyse statique
-./gradlew :app:assembleRelease      # APK de production minifié par R8, non signé
+./gradlew :app:assembleRelease      # APK de production minifié par R8
 ```
 
-`assembleRelease` produit un APK non signé, qui ne peut pas être installé tel quel. Pour un usage
-personnel, `installDebug` suffit. Sinon, signez l'APK, par exemple depuis Android Studio avec
-**Build > Generate Signed App Bundle or APK**.
+### Signer la version de production
+
+Ajoutez ces quatre lignes à `local.properties` (ignoré par Git) :
+
+```properties
+RELEASE_STORE_FILE=~/keystores/codexcine/codexcine.jks
+RELEASE_STORE_PASSWORD=…
+RELEASE_KEY_ALIAS=upload
+RELEASE_KEY_PASSWORD=…
+```
+
+`assembleRelease` produit alors `app-release.apk`, signé et installable. Sans ces lignes, il produit
+`app-release-unsigned.apk`, qui ne peut pas être installé tel quel. Gardez une copie du fichier de clés
+ailleurs : sans lui, les mises à jour ne s'installeront plus par-dessus l'application.
 
 Les choix techniques sont documentés (en anglais) dans [`DECISIONS.md`](DECISIONS.md).
 

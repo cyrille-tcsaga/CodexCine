@@ -2,6 +2,8 @@
     <dimen name="card_corner_radius">10dp</dimen>
     <dimen name="hero_height">340dp</dimen>
     <dimen name="hero_padding_start">58dp</dimen>
+    <!-- Tall enough that the first row's title just shows under it, as a hint to scroll. -->
+    <dimen name="details_hero_height">470dp</dimen>
     <!--
         Leanback's own values, overridden on purpose: Leanback reads them (hence "unused" here), and
         they are the only way to change these without replacing its widgets. See DECISIONS.md.

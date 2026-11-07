@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The focus ring of the round cast cards: same stroke as card_focus_ring. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <stroke
+        android:width="3dp"
+        android:color="@color/brand_ivory" />
+</shape>

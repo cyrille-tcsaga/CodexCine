@@ -194,8 +194,25 @@ instead of a top bar, and no footer.
   strong zoom with heavy shadows, were judged too much by the owner. `BaseCardView` filters focus and selection out of its drawable state, so the ring is
   set from `setSelected`, as the image's foreground, layered over any overlay such as the progress bar.
   "Continuer à regarder" uses wide stills.
-- **Rounded buttons everywhere**: details actions, error and about screens, player panels. Focus turns a pill
+- **"Les plus récents" rows** on Films and Séries: TMDB `discover`, sorted by release (or first air) date,
+  up to today so announced titles stay out, with at least 10 votes so that obscure entries do not fill the
+  row.
+- **Rounded buttons everywhere**: details, error and about screens, player panels. Focus turns a pill
   ivory with dark text, which reads at three metres and does not rely on colour alone.
+
+### Details screen
+
+- **Built like the billboard, not with `DetailsSupportFragment`.** The title's artwork fills the screen behind
+  the same scrim as the home; over it, the type, the title, the facts (year, length, outlined age rating,
+  rating, outlined audio versions from the provider), the genres, the overview and pill buttons (Lecture,
+  Bande-annonce, Ma liste with a + or ✓). Seasons, cast and recommendations follow as ordinary rows. Leanback's
+  details template (poster on a band, actions above the title) could not take this layout.
+- **The hero updates in place** (`DetailsHeroRow` notifies its bound view) rather than through the adapter,
+  so the focused button keeps the focus when the trailer, the list state or the audio versions arrive.
+- **No shared poster transition any more.** It animated the card into the template's poster, which no longer
+  exists; the screen now opens with the standard activity transition.
+- **Cast as round portraits** with the name centred underneath (`BaseCardPresenter(circular = true)`), so
+  people read apart from titles.
 
 ### Measured
 
@@ -231,10 +248,8 @@ where the system itself took over 10 s to start the process. They did not occur 
 - **Grid and search ViewModels take a loader function**, so their paging and debounce logic is
   testable
   without implementing the whole Retrofit interface.
-- **Details builds its overview row before the network answers.** Play only needs the intent extras,
-  and the
-  shared element transition needs a target immediately, or the postponed transition holds the window
-  back.
+- **Details builds its hero row before the network answers.** Play only needs the intent extras, so it
+  works at once; the rest of the hero fills in place when the details arrive.
 
 ## Images and memory (2 GB RAM)
 

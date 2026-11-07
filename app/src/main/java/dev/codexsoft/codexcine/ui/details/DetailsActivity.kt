@@ -12,8 +12,6 @@ class DetailsActivity : FragmentHostActivity() {
     override fun createContentFragment(): Fragment = VideoDetailsFragment()
 
     companion object {
-        const val SHARED_ELEMENT_NAME = "details_hero"
-
         fun newIntent(context: Context, mediaId: Int, mediaType: MediaType, title: String): Intent =
             Intent(context, DetailsActivity::class.java)
                 .putExtra(Extras.MEDIA_ID, mediaId)

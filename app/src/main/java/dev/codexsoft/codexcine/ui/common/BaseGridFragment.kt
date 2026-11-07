@@ -17,7 +17,7 @@ abstract class BaseGridFragment(
 
     private val cards = ArrayObjectAdapter(cardPresenter)
 
-    protected abstract fun onCardClicked(item: Any, card: Presenter.ViewHolder?)
+    protected abstract fun onCardClicked(item: Any)
 
     /** Called with the position of the newly selected card. */
     protected open fun onCardSelected(position: Int) = Unit
@@ -26,8 +26,8 @@ abstract class BaseGridFragment(
         super.onCreate(savedInstanceState)
         setGridPresenter(cardGridPresenter(columns))
         adapter = cards
-        onItemViewClickedListener = OnItemViewClickedListener { card, item, _, _ ->
-            if (item != null) onCardClicked(item, card)
+        onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
+            if (item != null) onCardClicked(item)
         }
         setOnItemViewSelectedListener(
             OnItemViewSelectedListener { _, item, _, _ ->

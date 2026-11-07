@@ -3,7 +3,6 @@ package dev.codexsoft.codexcine.ui.season
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
-import androidx.leanback.widget.Presenter
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.codexsoft.codexcine.R
@@ -53,7 +52,7 @@ class SeasonFragment : BaseGridFragment(columns = 4, cardPresenter = EpisodeCard
         }
     }
 
-    override fun onCardClicked(item: Any, card: Presenter.ViewHolder?) {
+    override fun onCardClicked(item: Any) {
         val episode = item as? Episode ?: return
         startActivity(
             PlaybackActivity.newIntent(

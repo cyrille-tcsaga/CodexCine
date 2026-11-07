@@ -3,7 +3,6 @@ package dev.codexsoft.codexcine.ui.person
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
-import androidx.leanback.widget.Presenter
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.codexsoft.codexcine.R
@@ -55,7 +54,7 @@ class PersonFragment : BaseGridFragment(columns = 5, cardPresenter = CardPresent
         }
     }
 
-    override fun onCardClicked(item: Any, card: Presenter.ViewHolder?) {
-        if (item is MediaItem) openMediaItem(item, card)
+    override fun onCardClicked(item: Any) {
+        if (item is MediaItem) openMediaItem(item)
     }
 }

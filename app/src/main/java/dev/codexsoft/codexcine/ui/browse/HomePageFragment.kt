@@ -64,9 +64,9 @@ class HomePageFragment : RowsSupportFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adapter = rowsAdapter
-        onItemViewClickedListener = OnItemViewClickedListener { card, item, _, _ ->
+        onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
             when (item) {
-                is MediaItem -> openMediaItem(item, card)
+                is MediaItem -> openMediaItem(item)
                 is WatchProgress -> resume(item)
                 is ActionCard.SeeAll -> startActivity(
                     GridActivity.newIntent(requireContext(), item.category, item.categoryTitle),

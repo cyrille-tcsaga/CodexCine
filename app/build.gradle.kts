@@ -17,6 +17,15 @@ val tmdbAccessToken = localProperties.getProperty("TMDB_ACCESS_TOKEN").orEmpty()
 val useSampleStream = localProperties.getProperty("USE_SAMPLE_STREAM")?.trim().toBoolean()
 val webPlayerTvMode = localProperties.getProperty("WEB_PLAYER_TV_MODE")?.trim().toBoolean()
 
+// Release signing: the keystore and its passwords stay outside the repository, named in local.properties.
+// Without all four values the release build is left unsigned.
+val releaseStoreFile = localProperties.getProperty("RELEASE_STORE_FILE")?.trim()?.takeIf { it.isNotEmpty() }
+val releaseStorePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD")?.takeIf { it.isNotEmpty() }
+val releaseKeyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS")?.trim()?.takeIf { it.isNotEmpty() }
+val releaseKeyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD")?.takeIf { it.isNotEmpty() }
+val hasReleaseSigning =
+    releaseStoreFile != null && releaseStorePassword != null && releaseKeyAlias != null && releaseKeyPassword != null
+
 android {
     namespace = "dev.codexsoft.codexcine"
     compileSdk = 37
@@ -36,6 +45,18 @@ android {
         buildConfig = true
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                val path = releaseStoreFile.orEmpty()
+                storeFile = file(if (path.startsWith("~/")) System.getProperty("user.home") + path.drop(1) else path)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         debug {
             buildConfigField("boolean", "USE_SAMPLE_STREAM", useSampleStream.toString())
@@ -45,6 +66,7 @@ android {
                 enable = true
             }
             buildConfigField("boolean", "USE_SAMPLE_STREAM", "false")
+            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
         }
     }
 

@@ -1,37 +1,26 @@
 package dev.codexsoft.codexcine.ui.details
 
-import dev.codexsoft.codexcine.ui.common.cardRowPresenter
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
-import androidx.leanback.app.DetailsSupportFragment
-import androidx.leanback.app.DetailsSupportFragmentBackgroundController
-import androidx.leanback.widget.Action
+import androidx.leanback.app.BackgroundManager
+import androidx.leanback.app.ProgressBarManager
+import androidx.leanback.app.RowsSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.ClassPresenterSelector
-import androidx.leanback.widget.DetailsOverviewRow
-import androidx.leanback.widget.FullWidthDetailsOverviewRowPresenter
-import androidx.leanback.widget.FullWidthDetailsOverviewSharedElementHelper
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
-import androidx.leanback.widget.OnActionClickedListener
 import androidx.leanback.widget.OnItemViewClickedListener
 import androidx.leanback.widget.Presenter
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.core.ErrorKind
 import dev.codexsoft.codexcine.core.Extras
@@ -42,6 +31,7 @@ import dev.codexsoft.codexcine.domain.model.MediaType
 import dev.codexsoft.codexcine.domain.model.Season
 import dev.codexsoft.codexcine.ui.browse.CardPresenter
 import dev.codexsoft.codexcine.ui.common.appContainer
+import dev.codexsoft.codexcine.ui.common.cardRowPresenter
 import dev.codexsoft.codexcine.ui.common.collectWhileStarted
 import dev.codexsoft.codexcine.ui.common.loadBackgroundBitmap
 import dev.codexsoft.codexcine.ui.common.openMediaItem
@@ -50,13 +40,14 @@ import dev.codexsoft.codexcine.ui.person.PersonActivity
 import dev.codexsoft.codexcine.ui.playback.PlaybackActivity
 import dev.codexsoft.codexcine.ui.season.SeasonActivity
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 /**
- * The overview row and the Play action exist before the network answers: Play only needs the intent
- * extras, and the shared element transition needs a target to land on right away.
+ * A title's page, built like the home billboard: its artwork fills the screen, with the facts and the
+ * rounded buttons over it, and the seasons, cast and recommendations in rows underneath.
+ *
+ * The hero row exists before the network answers: Play only needs the intent extras.
  */
-class VideoDetailsFragment : DetailsSupportFragment() {
+class VideoDetailsFragment : RowsSupportFragment() {
 
     private val mediaId get() = requireActivity().intent.getIntExtra(Extras.MEDIA_ID, Extras.NO_VALUE)
     private val mediaType get() = MediaType.fromValue(requireActivity().intent.getStringExtra(Extras.MEDIA_TYPE))
@@ -78,39 +69,28 @@ class VideoDetailsFragment : DetailsSupportFragment() {
         }
     }
 
-    private lateinit var backgroundController: DetailsSupportFragmentBackgroundController
+    private val progressBarManager = ProgressBarManager()
     private lateinit var rows: ArrayObjectAdapter
-    private lateinit var overviewRow: DetailsOverviewRow
-    private lateinit var actions: ArrayObjectAdapter
-
-    private lateinit var playAction: Action
-    private var myListAction: Action? = null
+    private lateinit var hero: DetailsHeroRow
     private var displayedDetails: MediaDetails? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        backgroundController = DetailsSupportFragmentBackgroundController(this)
-        backgroundController.enableParallax()
+        val backgroundManager = BackgroundManager.getInstance(requireActivity())
+        if (!backgroundManager.isAttached) backgroundManager.attach(requireActivity().window)
+        backgroundManager.color = ContextCompat.getColor(requireContext(), R.color.brand_night)
 
-        actions = ArrayObjectAdapter()
-        playAction = Action(ACTION_PLAY, getString(R.string.action_play))
-        playAction.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_player_play)
-        actions.add(playAction)
-
-        overviewRow = DetailsOverviewRow(initialTitle)
-        overviewRow.imageDrawable = posterPlaceholder()
-        overviewRow.actionsAdapter = actions
-
+        hero = DetailsHeroRow(initialTitle, mediaType, heroListener)
         val selector = ClassPresenterSelector()
-            .addClassPresenter(DetailsOverviewRow::class.java, createOverviewPresenter())
+            .addClassPresenter(DetailsHeroRow::class.java, DetailsHeroRowPresenter())
             .addClassPresenter(ListRow::class.java, cardRowPresenter())
         rows = ArrayObjectAdapter(selector)
-        rows.add(overviewRow)
+        rows.add(hero)
         adapter = rows
 
-        onItemViewClickedListener = OnItemViewClickedListener { card, item, _, _ ->
+        onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
             when (item) {
-                is MediaItem -> openMediaItem(item, card)
+                is MediaItem -> openMediaItem(item)
                 is CastMember -> openPerson(item)
                 is Season -> openSeason(item)
             }
@@ -118,26 +98,30 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        progressBarManager.setRootView(view as ViewGroup)
         super.onViewCreated(view, savedInstanceState)
-        backgroundController.solidColor = ContextCompat.getColor(requireContext(), R.color.brand_night)
+        // Between the artwork (the window background) and the text: it keeps both readable.
+        view.background = ContextCompat.getDrawable(requireContext(), R.drawable.backdrop_scrim)
+        progressBarManager.setRootView(view as ViewGroup)
 
         if (mediaType == null) {
-            showDetailsError(ErrorKind.GENERIC)
+            showErrorScreen(ErrorKind.GENERIC)
             return
         }
         collectWhileStarted(viewModel.uiState, ::render)
-        collectWhileStarted(viewModel.playAvailability, ::renderPlayAvailability)
+        collectWhileStarted(viewModel.playAvailability) { hero.availability = it }
     }
 
-    private fun renderPlayAvailability(availability: PlayAvailability) {
-        playAction.label2 = when (availability) {
-            PlayAvailability.Unknown -> null
-            PlayAvailability.Unavailable -> getString(R.string.action_play_unavailable)
-            is PlayAvailability.Available ->
-                availability.languages.joinToString(getString(R.string.separator)) { it.uppercase() }.ifEmpty { null }
+    override fun onDestroyView() {
+        progressBarManager.hide()
+        super.onDestroyView()
+    }
+
+    private val heroListener = object : DetailsHeroRow.Listener {
+        override fun onPlay() = play()
+        override fun onTrailer() {
+            displayedDetails?.trailerKey?.let(::openTrailer)
         }
-        actions.notifyArrayItemRangeChanged(actions.indexOf(playAction), 1)
+        override fun onToggleMyList() = viewModel.toggleMyList()
     }
 
     private fun render(state: DetailsUiState) {
@@ -149,30 +133,21 @@ class VideoDetailsFragment : DetailsSupportFragment() {
                     displayedDetails = state.details
                     bindDetails(state.details)
                 }
-                updateMyListAction(state.isInMyList)
+                hero.isInMyList = state.isInMyList
             }
             is DetailsUiState.Error -> {
                 progressBarManager.hide()
-                showDetailsError(state.kind)
+                showErrorScreen(state.kind)
             }
         }
     }
 
-    private fun showDetailsError(kind: ErrorKind) {
-        // The enter transition was postponed for the poster, which will now never be displayed.
-        ActivityCompat.startPostponedEnterTransition(requireActivity())
-        showErrorScreen(kind)
-    }
-
     private fun bindDetails(details: MediaDetails) {
-        overviewRow.item = details
-        loadPoster(details.posterUrl)
-        loadCover(details.backdropUrl)
+        hero.details = details
+        loadBackdrop(details.backdropUrl)
 
-        if (details.trailerKey != null) {
-            actions.add(Action(ACTION_TRAILER, getString(R.string.action_trailer)))
-        }
-
+        // Rows below the hero are rebuilt, so a second answer never adds them twice.
+        if (rows.size() > 1) rows.removeItems(1, rows.size() - 1)
         addRow(R.string.row_seasons, SeasonCardPresenter(), details.seasons)
         addRow(R.string.row_cast, CastCardPresenter(), details.cast)
         addRow(R.string.row_recommendations, CardPresenter(), details.recommendations)
@@ -185,67 +160,12 @@ class VideoDetailsFragment : DetailsSupportFragment() {
         rows.add(ListRow(HeaderItem(titleRes.toLong(), getString(titleRes)), cards))
     }
 
-    private fun updateMyListAction(isInMyList: Boolean) {
-        val label = getString(if (isInMyList) R.string.action_remove_my_list else R.string.action_add_my_list)
-        val current = myListAction
-        if (current == null) {
-            myListAction = Action(ACTION_MY_LIST, label).also { actions.add(it) }
-        } else if (current.label1 != label) {
-            current.label1 = label
-            actions.notifyArrayItemRangeChanged(actions.indexOf(current), 1)
-        }
-    }
-
-    private fun createOverviewPresenter(): FullWidthDetailsOverviewRowPresenter {
-        val presenter = FullWidthDetailsOverviewRowPresenter(DetailsDescriptionPresenter())
-        presenter.backgroundColor = ContextCompat.getColor(requireContext(), R.color.details_background)
-        presenter.actionsBackgroundColor = ContextCompat.getColor(requireContext(), R.color.details_actions_background)
-
-        val sharedElementHelper = FullWidthDetailsOverviewSharedElementHelper()
-        sharedElementHelper.setSharedElementEnterTransition(activity, DetailsActivity.SHARED_ELEMENT_NAME)
-        presenter.setListener(sharedElementHelper)
-        presenter.isParticipatingEntranceTransition = true
-
-        presenter.onActionClickedListener = OnActionClickedListener { action ->
-            when (action.id) {
-                ACTION_PLAY -> play()
-                ACTION_TRAILER -> displayedDetails?.trailerKey?.let(::openTrailer)
-                ACTION_MY_LIST -> viewModel.toggleMyList()
-            }
-        }
-        return presenter
-    }
-
-    private fun posterPlaceholder(): Drawable = GradientDrawable().apply {
-        setColor(ContextCompat.getColor(requireContext(), R.color.card_background))
-        setSize(posterWidthPx(), posterHeightPx())
-    }
-
-    private fun posterWidthPx() = (POSTER_WIDTH_DP * resources.displayMetrics.density).roundToInt()
-    private fun posterHeightPx() = (POSTER_HEIGHT_DP * resources.displayMetrics.density).roundToInt()
-
-    private fun loadPoster(url: String?) {
-        if (url == null) return
-        Glide.with(this)
-            .load(url)
-            .centerCrop()
-            .into(object : CustomTarget<Drawable>(posterWidthPx(), posterHeightPx()) {
-                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                    overviewRow.imageDrawable = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {
-                    overviewRow.imageDrawable = posterPlaceholder()
-                }
-            })
-    }
-
-    private fun loadCover(url: String?) {
+    private fun loadBackdrop(url: String?) {
         if (url == null) return
         viewLifecycleOwner.lifecycleScope.launch {
             val metrics = resources.displayMetrics
             val bitmap = loadBackgroundBitmap(requireContext(), url, metrics.widthPixels, metrics.heightPixels)
-            if (bitmap != null) backgroundController.coverBitmap = bitmap
+            if (bitmap != null) BackgroundManager.getInstance(requireActivity()).setBitmap(bitmap)
         }
     }
 
@@ -290,14 +210,5 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     private fun openSeason(season: Season) {
         val title = displayedDetails?.title ?: initialTitle
         startActivity(SeasonActivity.newIntent(requireContext(), mediaId, season.seasonNumber, title))
-    }
-
-    private companion object {
-        const val ACTION_PLAY = 1L
-        const val ACTION_TRAILER = 2L
-        const val ACTION_MY_LIST = 3L
-
-        const val POSTER_WIDTH_DP = 180
-        const val POSTER_HEIGHT_DP = 270
     }
 }

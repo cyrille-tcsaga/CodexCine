@@ -5,9 +5,11 @@ import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.leanback.widget.ImageCardView
@@ -20,13 +22,16 @@ import kotlin.math.roundToInt
 /**
  * Every card in the app: an [ImageCardView] of a fixed size whose image has rounded corners, with its
  * title and details underneath, straight on the page. The selected card gets an ivory ring around
- * its image, on top of a slight zoom (see CardRows.kt).
+ * its image, on top of a slight zoom (see CardRows.kt). A [circular] card (a person) has a round
+ * image, with its name centred underneath.
  */
 abstract class BaseCardPresenter(
     private val widthDp: Int,
     private val heightDp: Int,
+    private val circular: Boolean = false,
 ) : Presenter() {
 
+    private val focusRing = if (circular) R.drawable.card_focus_ring_circle else R.drawable.card_focus_ring
     private var widthPx = 0
     private var heightPx = 0
 
@@ -52,10 +57,22 @@ abstract class BaseCardPresenter(
         card.mainImageView?.apply {
             outlineProvider = object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
-                    outline.setRoundRect(0, 0, view.width, view.height, cornerRadius)
+                    if (circular) {
+                        outline.setOval(0, 0, view.width, view.height)
+                    } else {
+                        outline.setRoundRect(0, 0, view.width, view.height, cornerRadius)
+                    }
                 }
             }
             clipToOutline = true
+        }
+        if (circular) {
+            listOf(androidx.leanback.R.id.title_text, androidx.leanback.R.id.content_text).forEach { id ->
+                card.findViewById<TextView>(id)?.apply {
+                    layoutParams = layoutParams.apply { width = ViewGroup.LayoutParams.MATCH_PARENT }
+                    gravity = Gravity.CENTER_HORIZONTAL
+                }
+            }
         }
         return ViewHolder(card)
     }
@@ -70,7 +87,7 @@ abstract class BaseCardPresenter(
         val image = mainImageView ?: return
         val layers = listOfNotNull(
             getTag(R.id.card_image_overlay) as? Drawable,
-            if (isSelected) ContextCompat.getDrawable(context, R.drawable.card_focus_ring) else null,
+            if (isSelected) ContextCompat.getDrawable(context, focusRing) else null,
         )
         image.foreground = when (layers.size) {
             0 -> null

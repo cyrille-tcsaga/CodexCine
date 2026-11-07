@@ -14,6 +14,8 @@ val CategoryType.titleRes: Int
         CategoryType.NOW_PLAYING_MOVIES -> R.string.row_now_playing_movies
         CategoryType.TOP_RATED_MOVIES -> R.string.row_top_rated_movies
         CategoryType.UPCOMING_MOVIES -> R.string.row_upcoming_movies
+        CategoryType.LATEST_MOVIES -> R.string.row_latest_movies
+        CategoryType.LATEST_TV -> R.string.row_latest_tv
         CategoryType.POPULAR_TV -> R.string.row_popular_tv
         CategoryType.TOP_RATED_TV -> R.string.row_top_rated_tv
         CategoryType.ON_THE_AIR_TV -> R.string.row_on_the_air_tv

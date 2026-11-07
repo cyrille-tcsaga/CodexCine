@@ -4,7 +4,7 @@ import androidx.leanback.widget.ImageCardView
 import dev.codexsoft.codexcine.domain.model.CastMember
 import dev.codexsoft.codexcine.ui.common.BaseCardPresenter
 
-class CastCardPresenter : BaseCardPresenter(widthDp = 120, heightDp = 180) {
+class CastCardPresenter : BaseCardPresenter(widthDp = 124, heightDp = 124, circular = true) {
 
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any?) {
         val member = item as? CastMember ?: return

@@ -33,6 +33,7 @@ enum class HomePage(
         R.drawable.ic_nav_movies,
         listOf(
             CategoryType.POPULAR_MOVIES,
+            CategoryType.LATEST_MOVIES,
             CategoryType.NOW_PLAYING_MOVIES,
             CategoryType.TOP_RATED_MOVIES,
             CategoryType.UPCOMING_MOVIES,
@@ -44,7 +45,12 @@ enum class HomePage(
     SHOWS(
         R.string.page_shows,
         R.drawable.ic_nav_shows,
-        listOf(CategoryType.POPULAR_TV, CategoryType.ON_THE_AIR_TV, CategoryType.TOP_RATED_TV),
+        listOf(
+            CategoryType.POPULAR_TV,
+            CategoryType.LATEST_TV,
+            CategoryType.ON_THE_AIR_TV,
+            CategoryType.TOP_RATED_TV,
+        ),
     ),
     MY_LIST(
         R.string.row_my_list,

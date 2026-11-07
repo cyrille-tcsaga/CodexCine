@@ -1,0 +1,14 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <dimen name="card_corner_radius">10dp</dimen>
+    <dimen name="hero_height">340dp</dimen>
+    <dimen name="hero_padding_start">58dp</dimen>
+    <!--
+        Leanback's own values, overridden on purpose: Leanback reads them (hence "unused" here), and
+        they are the only way to change these without replacing its widgets. See DECISIONS.md.
+    -->
+    <!-- Raised so Leanback's shadows and focus effects follow the rounded cards. -->
+    <dimen name="lb_rounded_rect_corner_radius" tools:ignore="PrivateResource,UnusedResources">10dp</dimen>
+    <!-- Leanback zooms the selected menu entry; wider menu, gentler zoom, so "Continuer à regarder" fits. -->
+    <dimen name="lb_browse_headers_width" tools:ignore="PrivateResource,UnusedResources">300dp</dimen>
+    <item name="lb_browse_header_select_scale" format="float" type="dimen" tools:ignore="PrivateResource,UnusedResources">1.1</item>
+</resources>

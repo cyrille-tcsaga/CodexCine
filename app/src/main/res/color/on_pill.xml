@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Text and icons on a pill: dark on the light focused pill, light otherwise. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/brand_night" android:state_focused="true" />
+    <item android:color="@color/brand_night" android:state_pressed="true" />
+    <item android:color="@color/brand_ivory" />
+</selector>

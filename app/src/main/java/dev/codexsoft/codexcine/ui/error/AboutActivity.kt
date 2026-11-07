@@ -25,7 +25,7 @@ class AboutActivity : FragmentHostActivity() {
         message = getString(R.string.about_message, BuildConfig.VERSION_NAME),
         retryable = false,
         title = getString(R.string.row_about),
-        image = R.drawable.ic_info,
+        image = R.drawable.ic_logo_mark,
     )
 
     // Public Activity API. Lint only objects because ComponentActivity redeclares it with a restricted annotation.

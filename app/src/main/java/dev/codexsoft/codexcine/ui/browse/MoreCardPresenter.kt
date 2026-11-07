@@ -11,11 +11,7 @@ sealed class ActionCard {
     data object About : ActionCard()
 }
 
-class MoreCardPresenter : BaseCardPresenter(
-    widthDp = 156,
-    heightDp = 234,
-    defaultColor = R.color.fastlane_background,
-) {
+class MoreCardPresenter : BaseCardPresenter(widthDp = 156, heightDp = 234) {
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any?) {
         val card = viewHolder.view as ImageCardView
         val context = card.context

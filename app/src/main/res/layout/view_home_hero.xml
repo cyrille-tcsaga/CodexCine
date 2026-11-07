@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The home billboard. The artwork is the screen backdrop; this only lays text and buttons over it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="bottom"
+    android:minHeight="@dimen/hero_height"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/hero_padding_start"
+    android:paddingEnd="48dp"
+    android:paddingBottom="24dp">
+
+    <LinearLayout
+        android:id="@+id/hero_content"
+        android:layout_width="640dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/hero_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/brand_display"
+            android:letterSpacing="0.08"
+            android:textAllCaps="true"
+            android:textColor="@color/brand_amber"
+            android:textFontWeight="700"
+            android:textSize="16sp"
+            tools:text="À la une · Film" />
+
+        <TextView
+            android:id="@+id/hero_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/brand_display"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:textColor="@color/brand_ivory"
+            android:textFontWeight="700"
+            android:textSize="48sp"
+            tools:text="Titre du film" />
+
+        <TextView
+            android:id="@+id/hero_meta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/brand_ivory"
+            android:textFontWeight="500"
+            android:textSize="18sp"
+            tools:text="2026 · ★ 7.8" />
+
+        <TextView
+            android:id="@+id/hero_overview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:ellipsize="end"
+            android:lineSpacingMultiplier="1.15"
+            android:maxLines="3"
+            android:textColor="@color/brand_mist"
+            android:textSize="18sp"
+            tools:text="Résumé du film." />
+
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <Button
+                android:id="@+id/hero_play"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_pill_primary"
+                android:drawableStart="@drawable/ic_player_play"
+                android:drawablePadding="10dp"
+                android:drawableTint="@color/brand_night"
+                android:fontFamily="@font/brand_display"
+                android:paddingStart="22dp"
+                android:paddingEnd="28dp"
+                android:text="@string/action_play"
+                android:textAllCaps="false"
+                android:textColor="@color/brand_night"
+                android:textFontWeight="700"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/hero_info"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="52dp"
+                android:layout_marginStart="16dp"
+                android:background="@drawable/bg_pill"
+                android:drawableStart="@drawable/ic_more_info"
+                android:drawablePadding="10dp"
+                android:drawableTint="@color/on_pill"
+                android:fontFamily="@font/brand_display"
+                android:paddingStart="22dp"
+                android:paddingEnd="28dp"
+                android:text="@string/hero_more_info"
+                android:textAllCaps="false"
+                android:textColor="@color/on_pill"
+                android:textFontWeight="700"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/hero_dots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="22dp"
+        android:importantForAccessibility="no" />
+</LinearLayout>

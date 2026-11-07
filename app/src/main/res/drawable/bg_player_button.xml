@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Round icon buttons: an ivory disc behind the focused one, its icon turning dark (see on_pill). -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
-        <shape android:shape="rectangle">
-            <corners android:radius="12dp" />
-            <solid android:color="@color/player_focus_fill" />
-            <stroke
-                android:width="3dp"
-                android:color="@android:color/white" />
+        <shape android:shape="oval">
+            <solid android:color="@color/brand_ivory" />
         </shape>
     </item>
-    <item>
-        <shape android:shape="rectangle">
-            <corners android:radius="12dp" />
-            <solid android:color="@android:color/transparent" />
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/brand_ivory" />
         </shape>
     </item>
+    <item android:drawable="@android:color/transparent" />
 </selector>

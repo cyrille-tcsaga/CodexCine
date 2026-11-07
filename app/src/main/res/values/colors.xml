@@ -1,14 +1,30 @@
 <resources>
+    <!-- Brand palette (direction A, "Bobine") -->
+    <color name="brand_night">#0B0D1A</color>
+    <color name="brand_ink">#1B1F3B</color>
+    <color name="brand_amber">#F5A623</color>
+    <color name="brand_ivory">#F4EFE6</color>
+    <color name="brand_mist">#A9AECB</color>
+
+    <!-- Surfaces -->
     <color name="background_gradient_start">#0B0D1A</color>
-    <color name="background_gradient_end">#22263F</color>
-    <color name="fastlane_background">#1B1F3B</color>
+    <color name="background_gradient_end">#13162B</color>
+    <color name="fastlane_background">#F20B0D1A</color>
+    <color name="card_background">#14172C</color>
+    <color name="details_background">#0F1224</color>
+    <color name="details_actions_background">#0B0D1A</color>
+    <color name="pill_background">#2EFFFFFF</color>
+    <color name="backdrop_scrim_strong">#F20B0D1A</color>
+    <color name="backdrop_scrim_soft">#800B0D1A</color>
+
+    <!-- Accents -->
     <color name="search_opaque">#F5A623</color>
     <color name="selected_background">#F5A623</color>
-    <color name="default_background">#22263F</color>
+
+    <!-- Player -->
     <color name="player_scrim_top">#CC000000</color>
     <color name="player_scrim_bottom">#E6000000</color>
     <color name="player_panel">#E6101223</color>
-    <color name="player_focus_fill">#33FFFFFF</color>
     <color name="player_track">#59FFFFFF</color>
     <color name="player_buffered">#66FFFFFF</color>
 </resources>

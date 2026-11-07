@@ -1,8 +1,13 @@
 package dev.codexsoft.codexcine.ui.common
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.Outline
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.LayerDrawable
+import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.ColorRes
+import android.view.ViewOutlineProvider
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.leanback.widget.ImageCardView
@@ -12,11 +17,14 @@ import com.bumptech.glide.load.DecodeFormat
 import dev.codexsoft.codexcine.R
 import kotlin.math.roundToInt
 
-/** Every card in the app: an [ImageCardView] of a fixed size that changes colour when selected. */
+/**
+ * Every card in the app: an [ImageCardView] of a fixed size whose image has rounded corners, with its
+ * title and details underneath, straight on the page. The selected card gets an ivory ring around
+ * its image, on top of a slight zoom (see CardRows.kt).
+ */
 abstract class BaseCardPresenter(
     private val widthDp: Int,
     private val heightDp: Int,
-    @param:ColorRes private val defaultColor: Int = R.color.default_background,
 ) : Presenter() {
 
     private var widthPx = 0
@@ -24,28 +32,51 @@ abstract class BaseCardPresenter(
 
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
         val context = parent.context
-        val unselected = ContextCompat.getColor(context, defaultColor)
-        val selected = ContextCompat.getColor(context, R.color.selected_background)
+        val cornerRadius = context.resources.getDimension(R.dimen.card_corner_radius)
         widthPx = context.dpToPx(widthDp)
         heightPx = context.dpToPx(heightDp)
 
         val card = object : ImageCardView(context) {
+            // BaseCardView filters focus and selection out of its drawable state, so a state list
+            // foreground would never change: the ring is swapped in here instead.
             override fun setSelected(isSelected: Boolean) {
-                applyColor(if (isSelected) selected else unselected)
                 super.setSelected(isSelected)
-            }
-
-            private fun applyColor(color: Int) {
-                setBackgroundColor(color)
-                setInfoAreaBackgroundColor(color)
+                refreshImageForeground()
             }
         }
         card.isFocusable = true
         card.isFocusableInTouchMode = true
-        card.setBackgroundColor(unselected)
-        card.setInfoAreaBackgroundColor(unselected)
+        card.setBackgroundColor(Color.TRANSPARENT)
+        card.setInfoAreaBackgroundColor(Color.TRANSPARENT)
         card.setMainImageDimensions(widthPx, heightPx)
+        card.mainImageView?.apply {
+            outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, cornerRadius)
+                }
+            }
+            clipToOutline = true
+        }
         return ViewHolder(card)
+    }
+
+    /** Draws [overlay] (a progress bar, say) over the image, below the focus ring. */
+    protected fun ImageCardView.setImageOverlay(overlay: Drawable?) {
+        setTag(R.id.card_image_overlay, overlay)
+        refreshImageForeground()
+    }
+
+    private fun ImageCardView.refreshImageForeground() {
+        val image = mainImageView ?: return
+        val layers = listOfNotNull(
+            getTag(R.id.card_image_overlay) as? Drawable,
+            if (isSelected) ContextCompat.getDrawable(context, R.drawable.card_focus_ring) else null,
+        )
+        image.foreground = when (layers.size) {
+            0 -> null
+            1 -> layers.single()
+            else -> LayerDrawable(layers.toTypedArray())
+        }
     }
 
     /** Loads a remote image at exactly the card size. A null URL shows the error drawable. */
@@ -78,6 +109,7 @@ abstract class BaseCardPresenter(
         // by then. clear() finds the request whichever manager owns it, so the app context is enough.
         card.mainImageView?.let { Glide.with(card.context.applicationContext).clear(it) }
         card.mainImage = null
+        card.setImageOverlay(null)
     }
 
     private fun Context.dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).roundToInt()

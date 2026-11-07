@@ -28,9 +28,10 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:fontFamily="@font/brand_display"
                 android:textColor="@android:color/white"
-                android:textSize="24sp"
-                android:textStyle="bold"
+                android:textFontWeight="700"
+                android:textSize="26sp"
                 tools:text="Titre" />
 
             <LinearLayout

@@ -160,7 +160,19 @@ dans `di/AppContainer.kt`. Elle retourne `StreamSource.Direct` pour un flux lu p
 `StreamSource.WebEmbed` pour une page web. Dans ce second cas, ajoutez aussi son hôte à
 `HardenedWebViewFactory` : toute autre page principale est refusée.
 
-## 5. Commandes utiles
+## 5. Identité visuelle
+
+Le logo, l'icône, l'icône de démarrage et la bannière TV sont générés à partir d'une seule géométrie :
+
+```bash
+pip install pillow fonttools
+python3 tools/make_brand_assets.py
+```
+
+Modifiez le script, pas les fichiers qu'il produit. Les polices Space Grotesk et Inter sont incluses dans
+l'application (licence SIL OFL, voir `app/src/main/assets/licenses`).
+
+## 6. Commandes utiles
 
 ```bash
 ./gradlew :app:assembleDebug        # APK de débogage

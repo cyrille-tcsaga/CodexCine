@@ -8,4 +8,6 @@ data class MediaItem(
     val releaseYear: String?,
     val voteAverage: Double,
     val mediaType: MediaType,
+    /** Only filled from catalogue lists, for the home billboard. */
+    val overview: String? = null,
 )

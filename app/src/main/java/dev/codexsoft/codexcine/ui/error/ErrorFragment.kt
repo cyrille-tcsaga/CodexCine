@@ -2,8 +2,11 @@ package dev.codexsoft.codexcine.ui.error
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toDrawable
 import androidx.leanback.app.ErrorSupportFragment
 import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.ui.common.FragmentHostActivity
@@ -23,6 +26,14 @@ class ErrorFragment : ErrorSupportFragment() {
         message = args.getString(ARG_MESSAGE)
         imageDrawable = ContextCompat.getDrawable(requireContext(), args.getInt(ARG_IMAGE))
         setButtonText(getString(if (retryable) R.string.retry else R.string.back))
+        // Same rounded button as everywhere else, on a plain brand background.
+        backgroundDrawable = ContextCompat.getColor(requireContext(), R.color.brand_night).toDrawable()
+        view.findViewById<Button>(androidx.leanback.R.id.button)?.apply {
+            setBackgroundResource(R.drawable.bg_pill)
+            setTextColor(ContextCompat.getColorStateList(context, R.color.on_pill))
+            typeface = ResourcesCompat.getFont(context, R.font.brand_display)
+            isAllCaps = false
+        }
         setButtonClickListener {
             val host = activity
             if (retryable && host is FragmentHostActivity) host.showContent() else host?.finish()

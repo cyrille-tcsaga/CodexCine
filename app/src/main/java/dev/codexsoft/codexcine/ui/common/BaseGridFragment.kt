@@ -8,7 +8,6 @@ import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.OnItemViewClickedListener
 import androidx.leanback.widget.OnItemViewSelectedListener
 import androidx.leanback.widget.Presenter
-import androidx.leanback.widget.VerticalGridPresenter
 
 /** A vertical grid of cards with a loading indicator. Items are only ever appended. */
 abstract class BaseGridFragment(
@@ -25,7 +24,7 @@ abstract class BaseGridFragment(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setGridPresenter(VerticalGridPresenter().apply { numberOfColumns = columns })
+        setGridPresenter(cardGridPresenter(columns))
         adapter = cards
         onItemViewClickedListener = OnItemViewClickedListener { card, item, _, _ ->
             if (item != null) onCardClicked(item, card)

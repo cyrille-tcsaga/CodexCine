@@ -83,6 +83,7 @@ dependencies {
     implementation(libs.media3.ui.leanback)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.webkit)
+    implementation(libs.androidx.core.splashscreen)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -12,6 +12,15 @@
     <string name="error_service_unreachable">Impossible de contacter le service de lecture.</string>
     <string name="empty_content">Aucun contenu disponible.</string>
 
+    <!-- Sidebar and home billboard -->
+    <string name="page_home">Accueil</string>
+    <string name="page_movies">Films</string>
+    <string name="page_shows">Séries</string>
+    <string name="hero_label_movie">À la une · Film</string>
+    <string name="hero_label_tv">À la une · Série</string>
+    <string name="hero_more_info">Plus d\'infos</string>
+    <string name="my_list_empty">Votre liste est vide. Ajoutez des titres depuis leur fiche, avec « Ajouter à ma liste ».</string>
+
     <!-- Home rows -->
     <string name="see_all">Voir tout</string>
     <string name="row_continue_watching">Continuer à regarder</string>

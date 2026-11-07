@@ -13,8 +13,8 @@ import dev.codexsoft.codexcine.ui.common.BaseCardPresenter
 import dev.codexsoft.codexcine.ui.common.runtimeText
 import kotlin.math.ceil
 
-/** A poster with how far the viewer got, drawn as a thin bar along the bottom of the image. */
-class ContinueWatchingCardPresenter : BaseCardPresenter(widthDp = 156, heightDp = 234) {
+/** A wide still with how far the viewer got, drawn as a thin bar along the bottom of the image. */
+class ContinueWatchingCardPresenter : BaseCardPresenter(widthDp = 264, heightDp = 148) {
 
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any?) {
         val progress = item as? WatchProgress ?: return
@@ -30,18 +30,15 @@ class ContinueWatchingCardPresenter : BaseCardPresenter(widthDp = 156, heightDp 
             null
         }
         card.contentText = listOfNotNull(episode, timeLeft).joinToString(context.getString(R.string.separator))
-        card.loadImage(progress.posterUrl)
-        card.mainImageView?.foreground = ProgressBarDrawable(
-            fraction = progress.fraction,
-            barColor = ContextCompat.getColor(context, R.color.selected_background),
-            trackColor = ContextCompat.getColor(context, R.color.player_track),
-            heightPx = BAR_HEIGHT_DP * context.resources.displayMetrics.density,
+        card.loadImage(progress.backdropUrl ?: progress.posterUrl)
+        card.setImageOverlay(
+            ProgressBarDrawable(
+                fraction = progress.fraction,
+                barColor = ContextCompat.getColor(context, R.color.selected_background),
+                trackColor = ContextCompat.getColor(context, R.color.player_track),
+                heightPx = BAR_HEIGHT_DP * context.resources.displayMetrics.density,
+            ),
         )
-    }
-
-    override fun onUnbindViewHolder(viewHolder: ViewHolder) {
-        (viewHolder.view as ImageCardView).mainImageView?.foreground = null
-        super.onUnbindViewHolder(viewHolder)
     }
 
     private class ProgressBarDrawable(

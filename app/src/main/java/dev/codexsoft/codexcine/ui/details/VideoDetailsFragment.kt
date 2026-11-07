@@ -1,5 +1,6 @@
 package dev.codexsoft.codexcine.ui.details
 
+import dev.codexsoft.codexcine.ui.common.cardRowPresenter
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -22,7 +23,6 @@ import androidx.leanback.widget.FullWidthDetailsOverviewRowPresenter
 import androidx.leanback.widget.FullWidthDetailsOverviewSharedElementHelper
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
-import androidx.leanback.widget.ListRowPresenter
 import androidx.leanback.widget.OnActionClickedListener
 import androidx.leanback.widget.OnItemViewClickedListener
 import androidx.leanback.widget.Presenter
@@ -94,6 +94,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
 
         actions = ArrayObjectAdapter()
         playAction = Action(ACTION_PLAY, getString(R.string.action_play))
+        playAction.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_player_play)
         actions.add(playAction)
 
         overviewRow = DetailsOverviewRow(initialTitle)
@@ -102,7 +103,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
 
         val selector = ClassPresenterSelector()
             .addClassPresenter(DetailsOverviewRow::class.java, createOverviewPresenter())
-            .addClassPresenter(ListRow::class.java, ListRowPresenter())
+            .addClassPresenter(ListRow::class.java, cardRowPresenter())
         rows = ArrayObjectAdapter(selector)
         rows.add(overviewRow)
         adapter = rows
@@ -119,7 +120,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         progressBarManager.setRootView(view as ViewGroup)
         super.onViewCreated(view, savedInstanceState)
-        backgroundController.solidColor = ContextCompat.getColor(requireContext(), R.color.background_gradient_start)
+        backgroundController.solidColor = ContextCompat.getColor(requireContext(), R.color.brand_night)
 
         if (mediaType == null) {
             showDetailsError(ErrorKind.GENERIC)
@@ -197,8 +198,8 @@ class VideoDetailsFragment : DetailsSupportFragment() {
 
     private fun createOverviewPresenter(): FullWidthDetailsOverviewRowPresenter {
         val presenter = FullWidthDetailsOverviewRowPresenter(DetailsDescriptionPresenter())
-        presenter.backgroundColor = ContextCompat.getColor(requireContext(), R.color.default_background)
-        presenter.actionsBackgroundColor = ContextCompat.getColor(requireContext(), R.color.fastlane_background)
+        presenter.backgroundColor = ContextCompat.getColor(requireContext(), R.color.details_background)
+        presenter.actionsBackgroundColor = ContextCompat.getColor(requireContext(), R.color.details_actions_background)
 
         val sharedElementHelper = FullWidthDetailsOverviewSharedElementHelper()
         sharedElementHelper.setSharedElementEnterTransition(activity, DetailsActivity.SHARED_ELEMENT_NAME)
@@ -216,7 +217,7 @@ class VideoDetailsFragment : DetailsSupportFragment() {
     }
 
     private fun posterPlaceholder(): Drawable = GradientDrawable().apply {
-        setColor(ContextCompat.getColor(requireContext(), R.color.fastlane_background))
+        setColor(ContextCompat.getColor(requireContext(), R.color.card_background))
         setSize(posterWidthPx(), posterHeightPx())
     }
 

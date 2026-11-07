@@ -6,7 +6,7 @@
             <size
                 android:width="156dp"
                 android:height="234dp" />
-            <solid android:color="@color/default_background" />
+            <solid android:color="@color/card_background" />
         </shape>
     </item>
     <item

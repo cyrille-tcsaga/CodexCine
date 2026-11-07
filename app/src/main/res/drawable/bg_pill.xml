@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rounded buttons everywhere: a translucent pill that turns ivory with focus, readable at three metres. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="100dp" />
+            <solid android:color="@color/brand_ivory" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="100dp" />
+            <solid android:color="@color/brand_ivory" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="100dp" />
+            <solid android:color="@color/pill_background" />
+        </shape>
+    </item>
+</selector>

@@ -1,5 +1,6 @@
 package dev.codexsoft.codexcine.ui.search
 
+import dev.codexsoft.codexcine.ui.common.cardRowPresenter
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -8,7 +9,6 @@ import androidx.leanback.app.SearchSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
-import androidx.leanback.widget.ListRowPresenter
 import androidx.leanback.widget.ObjectAdapter
 import androidx.leanback.widget.OnItemViewClickedListener
 import androidx.leanback.widget.SearchOrbView
@@ -38,7 +38,7 @@ class SearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchResu
         }
     }
 
-    private val results = ArrayObjectAdapter(ListRowPresenter())
+    private val results = ArrayObjectAdapter(cardRowPresenter())
     private val cardPresenter = CardPresenter()
 
     override fun onCreate(savedInstanceState: Bundle?) {

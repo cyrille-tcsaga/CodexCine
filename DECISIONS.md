@@ -153,6 +153,56 @@ in software and is too slow to reproduce it faithfully, so these are the finding
   brief asks
   for it and minSdk 28 needs it.
 
+## Visual identity and home redesign
+
+Direction A ("Bobine") was chosen from three proposals: a film strip bent into a C around a play triangle,
+night blue and amber, Space Grotesk for titles and Inter for text.
+
+### Assets
+
+- **One source for every brand asset.** `tools/make_brand_assets.py` builds the mark, the horizontal logo,
+  the adaptive launcher icon, the splash icon and the 320 × 180 banner from one geometry. The perforations
+  are cut out of the strip (even-odd fill), so the mark works on any background. The wordmark is converted
+  to outlines, so it needs no font at runtime. Edit the script, not the generated files.
+- **Fonts are bundled, not downloaded.** Space Grotesk (500, 700) and Inter (400, 500, 600), SIL OFL 1.1, are
+  subset to Latin and the symbols the app shows (★ ✓ × …): about 240 KB in all. A TV box may have no Google
+  Play Services for downloadable fonts. Their licences ship in `assets/licenses`.
+- **Adaptive launcher icon** on the ink background, with a monochrome layer. With minSdk 28 the old raster
+  icons were removed.
+- **Splash screen** through `androidx.core:core-splashscreen` 1.2.0, so that it also exists on Android 9. It
+  stays up until the first home row is ready, at most 2.5 s.
+
+### Home: sidebar and billboard
+
+Modelled on the reference the owner supplied (a streaming home with a billboard and rows), with a sidebar
+instead of a top bar, and no footer.
+
+- **Sidebar = Leanback's headers, as navigation.** Each entry is a `PageRow` (Accueil, Films, Séries, Ma liste)
+  that opens its own `RowsSupportFragment` (`HomePageFragment`). Leanback already hides it while the viewer
+  is in the rows and brings it back on Left, which is how TV sidebars behave. Pages read the same
+  `MainViewModel`, owned by the home fragment, so the catalogue is still loaded once.
+- **Billboard** (`BillboardRowPresenter`): a custom first row with the title, year, rating, overview and two
+  pill buttons, over the title's artwork (the screen backdrop, behind a scrim). It rotates every 8 s through
+  up to six titles, but never while it has the focus, so the button being pressed cannot change title.
+  It is built with the first rows that arrive: trending if present, else popular films, else the first
+  catalogue row. Inserted later, above rows already shown, it left the selection on the row below it, so the
+  page did not open on it. This needed `overview` on `MediaItem` (nullable, list endpoints only).
+- **Play on the billboard** starts a film, or a show at the episode last watched, like the details screen.
+- **Cards**: titles and details always under the image, straight on the page; rounded images. The selected
+  card gets an ivory ring and a slight zoom (Leanback's extra-small factor), with no drop shadow and no
+  darkening of the other rows (`ui/common/CardRows.kt`, used by every row and grid). Leanback's defaults, a
+  strong zoom with heavy shadows, were judged too much by the owner. `BaseCardView` filters focus and selection out of its drawable state, so the ring is
+  set from `setSelected`, as the image's foreground, layered over any overlay such as the progress bar.
+  "Continuer à regarder" uses wide stills.
+- **Rounded buttons everywhere**: details actions, error and about screens, player panels. Focus turns a pill
+  ivory with dark text, which reads at three metres and does not rely on colour alone.
+
+### Measured
+
+On a freshly booted API 36 TV emulator (2 GB): 591 frames while browsing the home, 2.9 % janky, median
+18 ms, 111 MB PSS. Earlier ANRs on the home came from an emulator that had been running for hours, in swap,
+where the system itself took over 10 s to start the process. They did not occur after a cold boot.
+
 ## Architecture
 
 - **Leanback kept on purpose.** It is officially deprecated in favour of Compose for TV. For a
@@ -243,13 +293,15 @@ noted.
 
 ## Lint
 
-`lintDebug` reports 0 errors. Three checks are suppressed, each on one declaration:
+`lintDebug` reports 0 errors. These checks are suppressed, each on the declarations listed:
 
 | Suppression | Where | Why |
 |---|---|---|
 | `SetJavaScriptEnabled` | `HardenedWebViewFactory.create` | The embed cannot run without JavaScript, and the page gets no native interface. |
 | `RestrictedApi` | `dispatchKeyEvent` in `PlaybackActivity` and `AboutActivity` | Overrides the public `Activity` method. `ComponentActivity` redeclares it with a library-restricted annotation, a known false positive. |
 | `RequiresFeature` | `PlayerBridge` | The class is only created after `PlayerBridge.isSupported()` returned true, which lint cannot follow. |
+| `PrivateResource`, `UnusedResources` | three Leanback dimensions in `values/dimens.xml` | Overridden on purpose: card corner radius, sidebar width, and its selection zoom. Leanback reads them, which lint does not see, and they are the only way to change these without replacing its widgets. |
+| `VectorRaster` | `splash_icon.xml` | 288 dp is the size the splash screen API requires. |
 
 These warnings remain, and are accepted:
 

@@ -34,6 +34,7 @@ fun TmdbMovieDto.toMediaItem(): MediaItem = MediaItem(
     releaseYear = yearOf(releaseDate),
     voteAverage = voteAverage ?: 0.0,
     mediaType = MediaType.MOVIE,
+    overview = overview?.takeIf { it.isNotBlank() },
 )
 
 fun TmdbTvDto.toMediaItem(): MediaItem = MediaItem(
@@ -44,6 +45,7 @@ fun TmdbTvDto.toMediaItem(): MediaItem = MediaItem(
     releaseYear = yearOf(firstAirDate),
     voteAverage = voteAverage ?: 0.0,
     mediaType = MediaType.TV,
+    overview = overview?.takeIf { it.isNotBlank() },
 )
 
 /** Returns null for a `media_type` other than movie, tv or person. */
@@ -56,6 +58,7 @@ fun TmdbMultiSearchItemDto.toMediaItem(): MediaItem? = when (MediaType.fromValue
         releaseYear = yearOf(releaseDate),
         voteAverage = voteAverage ?: 0.0,
         mediaType = MediaType.MOVIE,
+        overview = overview?.takeIf { it.isNotBlank() },
     )
     MediaType.TV -> MediaItem(
         id = id,
@@ -65,6 +68,7 @@ fun TmdbMultiSearchItemDto.toMediaItem(): MediaItem? = when (MediaType.fromValue
         releaseYear = yearOf(firstAirDate),
         voteAverage = voteAverage ?: 0.0,
         mediaType = MediaType.TV,
+        overview = overview?.takeIf { it.isNotBlank() },
     )
     MediaType.PERSON -> MediaItem(
         id = id,

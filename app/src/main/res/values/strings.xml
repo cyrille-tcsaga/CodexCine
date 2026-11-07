@@ -81,6 +81,14 @@
     <string name="season_title">Saison %1$d · %2$s</string>
     <string name="episode_title">E%1$d · %2$s</string>
     <string name="episode_title_untitled">E%1$d</string>
+    <string name="episode_watched">Vu</string>
+    <string name="episode_menu_title">Épisode %1$d</string>
+    <string name="episode_mark_watched">Marquer comme vu</string>
+    <string name="episode_mark_unwatched">Marquer comme non vu</string>
+    <string name="episode_mark_up_to_here">Marquer comme vus jusqu\'ici</string>
+    <string name="season_mark_watched">Marquer la saison comme vue</string>
+    <string name="season_mark_unwatched">Marquer la saison comme non vue</string>
+    <string name="season_hint_long_press">Maintenez OK sur un épisode pour le marquer comme vu</string>
 
     <!-- Search -->
     <string name="search_no_results">Aucun résultat pour « %1$s »</string>

@@ -73,6 +73,25 @@
         <item name="android:textColor">@color/brand_night</item>
     </style>
 
+    <!-- The episode menu (season screen) -->
+    <style name="CodexCine.Dialog" parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/bg_dialog</item>
+        <item name="android:colorBackground">@color/brand_ink</item>
+        <item name="android:textColorPrimary">@color/brand_ivory</item>
+        <item name="android:textColorSecondary">@color/brand_mist</item>
+        <item name="android:textColorAlertDialogListItem">@color/brand_ivory</item>
+        <item name="android:colorAccent">@color/brand_amber</item>
+        <item name="android:colorControlHighlight">@color/dialog_highlight</item>
+        <item name="android:fontFamily">@font/brand_text</item>
+    </style>
+
+    <!-- Small help text at the bottom of a screen -->
+    <style name="CodexCine.TextAppearance.Hint" parent="android:TextAppearance.Material.Body1">
+        <item name="android:fontFamily">@font/brand_text</item>
+        <item name="android:textColor">@color/brand_mist</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
     <!-- Error and about screens -->
     <style name="CodexCine.ErrorMessage" parent="Widget.Leanback.ErrorMessageStyle">
         <item name="android:textAppearance">@style/CodexCine.TextAppearance.ErrorMessage</item>

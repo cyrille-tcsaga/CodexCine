@@ -107,6 +107,7 @@ internal fun Fragment.mainViewModelFactory(): ViewModelProvider.Factory = viewMo
             container.myListRepository,
             container.watchProgressRepository,
             container.watchedEpisodesRepository,
+            container.watchNextPublisher,
         )
     }
 }

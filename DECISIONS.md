@@ -230,6 +230,40 @@ instead of a top bar, and no footer.
   `ImageCardView` has no room for an extra view over its image. TMDB's placeholder titles ("Épisode 5") are
   hidden, as they only repeat the number.
 
+### Watched episodes (season screen)
+
+- **Shown on the cards**: a watched episode is dimmed, with an ivory disc and a check, and "Vu" in its
+  details; a part-watched one has the progress bar of "Continuer à regarder". The grid is updated in place
+  (`BaseGridFragment.replaceItems`, with a diff), so the focus stays on the card just changed.
+- **Changed with a long press on OK**, in a short menu: mark (or unmark) the episode, mark every episode up
+  to it, mark (or unmark) the season. Only aired episodes are marked; an episode with no date counts as aired.
+  A hint under the screen title says so, as a long press cannot be discovered otherwise.
+- **The menu is a plain `AlertDialog`** restyled with the brand colours: a list of three items needs no
+  `GuidedStepSupportFragment`, and it is native to the remote.
+- **Marking an episode watched removes its progress**, so it leaves "Continuer à regarder". The marks feed
+  "Nouveaux épisodes", and are written in the app's persistence scope so leaving the screen at once keeps them.
+
+### System "Play next" row
+
+- **The platform API, no library.** `TvContract.WatchNextPrograms` exists since API 26 (min is 28), so
+  `androidx.tvprovider` would only add a dependency. It needs `WRITE_EPG_DATA`, a permission granted at
+  install without a prompt; the provider only ever returns the app's own rows.
+- **What is published**: titles in progress ("continue", up to 10, with their position), and the new episodes of
+  shows already started ("new", up to 5). Progress is saved every 10 s while playing; the row follows it to the
+  minute only, so the provider is not written to all the time. Every write is off the main thread, and a
+  failure is logged, never shown. On a device without Leanback (a phone) nothing is published.
+- **A card the viewer removes stays removed** (until the title is watched again): the system broadcast is
+  recorded, and rows the launcher hid are also picked up on the next sync, in case the broadcast was missed.
+- **Opened through `codexcine://play/{movie|tv}/{id}?s=&e=&t=`** handled by `PlayLinkActivity`, the only
+  activity other apps can start. It accepts the two playable types, numbers in range, a show with both season
+  and episode, a movie with neither, and a title of 200 characters at most without control characters;
+  anything else opens the home. It starts the player with the app's home behind it, so Back stays in the app.
+- **Channels (an app row of its own) are not published**: Google TV no longer shows them, and the Mi Box's
+  launcher already shows "Play next".
+- **Not verified on Google TV.** On the Android TV emulator the cards appear in "Play next" and open the
+  player. Whether Google TV's "Continue watching" row accepts an app outside its partner programme can only
+  be checked on the Xiaomi TV Box S.
+
 ### Measured
 
 On a freshly booted API 36 TV emulator (2 GB): 591 frames while browsing the home, 2.9 % janky, median

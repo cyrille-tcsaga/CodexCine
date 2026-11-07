@@ -15,6 +15,7 @@ import androidx.leanback.widget.ImageCardView
 import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.domain.model.NewEpisode
 import dev.codexsoft.codexcine.ui.common.BaseCardPresenter
+import dev.codexsoft.codexcine.ui.common.meaningfulName
 
 /** The episode's still, with an amber "Nouveau" tag in its corner, the show's name and the episode under it. */
 class NewEpisodeCardPresenter : BaseCardPresenter(widthDp = 264, heightDp = 148) {
@@ -27,15 +28,10 @@ class NewEpisodeCardPresenter : BaseCardPresenter(widthDp = 264, heightDp = 148)
         card.titleText = newEpisode.show.title
         card.contentText = listOfNotNull(
             context.getString(R.string.playback_episode_subtitle, episode.seasonNumber, episode.episodeNumber),
-            // Without a French title TMDB sends "Épisode 5", which only repeats the number.
-            episode.name.takeIf { it.isNotBlank() && !GENERIC_NAME.matches(it.trim()) },
+            episode.meaningfulName(),
         ).joinToString(context.getString(R.string.separator))
         card.loadImage(episode.stillUrl ?: newEpisode.show.backdropUrl ?: newEpisode.show.posterUrl)
         card.setImageOverlay(NewTagDrawable(context))
-    }
-
-    private companion object {
-        val GENERIC_NAME = Regex("""(?i)[ée]pisode\s*\d+""")
     }
 
     /** Drawn rather than laid out: ImageCardView has no room for an extra view over its image. */

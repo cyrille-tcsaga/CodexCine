@@ -13,6 +13,7 @@
     <color name="card_background">#14172C</color>
     <color name="badge_stroke">#99F4EFE6</color>
     <color name="pill_background">#2EFFFFFF</color>
+    <color name="dialog_highlight">#40F5A623</color>
     <color name="backdrop_scrim_strong">#F20B0D1A</color>
     <color name="backdrop_scrim_soft">#800B0D1A</color>
 

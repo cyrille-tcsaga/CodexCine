@@ -5,14 +5,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.leanback.app.VerticalGridSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
+import androidx.leanback.widget.DiffCallback
 import androidx.leanback.widget.OnItemViewClickedListener
 import androidx.leanback.widget.OnItemViewSelectedListener
 import androidx.leanback.widget.Presenter
 
-/** A vertical grid of cards with a loading indicator. Items are only ever appended. */
+/** A vertical grid of cards with a loading indicator. Items are appended, or replaced in place. */
 abstract class BaseGridFragment(
     private val columns: Int,
-    cardPresenter: Presenter,
+    protected val cardPresenter: Presenter,
 ) : VerticalGridSupportFragment() {
 
     private val cards = ArrayObjectAdapter(cardPresenter)
@@ -50,5 +51,10 @@ abstract class BaseGridFragment(
         if (items.size > cards.size()) {
             cards.addAll(cards.size(), items.drop(cards.size()))
         }
+    }
+
+    /** Shows [items] in place of the current ones, rebinding only the cards that changed, so focus stays put. */
+    protected fun <T : Any> replaceItems(items: List<T>, diff: DiffCallback<T>) {
+        cards.setItems(items, diff)
     }
 }

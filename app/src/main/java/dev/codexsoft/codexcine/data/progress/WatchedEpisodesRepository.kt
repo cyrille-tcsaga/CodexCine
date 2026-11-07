@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
@@ -44,13 +45,22 @@ object WatchedEpisodesRules {
     /** Enough for every show one follows; the least recently watched are dropped first. */
     const val MAX_SHOWS = 200
 
-    fun markWatched(shows: List<WatchedShow>, showId: Int, episode: EpisodeNumber, nowMs: Long): List<WatchedShow> {
-        val current = shows.firstOrNull { it.showId == showId }
-        val episodes = (current?.episodes.orEmpty() + episode).distinct().sorted()
-        val updated = WatchedShow(showId, episodes, nowMs)
-        return (shows.filterNot { it.showId == showId } + updated)
-            .sortedByDescending { it.updatedAtMs }
-            .take(MAX_SHOWS)
+    fun markWatched(shows: List<WatchedShow>, showId: Int, episode: EpisodeNumber, nowMs: Long): List<WatchedShow> =
+        setWatched(shows, showId, listOf(episode), isWatched = true, nowMs = nowMs)
+
+    /** Adds or removes [episodes]. A show left with no watched episode is forgotten. */
+    fun setWatched(
+        shows: List<WatchedShow>,
+        showId: Int,
+        episodes: Collection<EpisodeNumber>,
+        isWatched: Boolean,
+        nowMs: Long,
+    ): List<WatchedShow> {
+        val current = shows.firstOrNull { it.showId == showId }?.episodes.orEmpty()
+        val updated = if (isWatched) (current + episodes).distinct().sorted() else current - episodes.toSet()
+        val others = shows.filterNot { it.showId == showId }
+        val all = if (updated.isEmpty()) others else others + WatchedShow(showId, updated, nowMs)
+        return all.sortedByDescending { it.updatedAtMs }.take(MAX_SHOWS)
     }
 }
 
@@ -74,12 +84,22 @@ class WatchedEpisodesRepository(context: Context) {
 
     suspend fun currentShows(): List<WatchedShow> = shows.first()
 
-    suspend fun markWatched(showId: Int, season: Int, episode: Int) {
+    /** The watched episodes of one show, kept up to date. */
+    fun watchedIn(showId: Int): Flow<Set<EpisodeNumber>> = shows
+        .map { all -> all.firstOrNull { it.showId == showId }?.episodes.orEmpty().toSet() }
+        .distinctUntilChanged()
+
+    suspend fun markWatched(showId: Int, season: Int, episode: Int) =
+        setWatched(showId, listOf(EpisodeNumber(season, episode)), isWatched = true)
+
+    suspend fun setWatched(showId: Int, episodes: Collection<EpisodeNumber>, isWatched: Boolean) {
+        if (episodes.isEmpty()) return
         dataStore.edit { prefs ->
-            val updated = WatchedEpisodesRules.markWatched(
+            val updated = WatchedEpisodesRules.setWatched(
                 decode(prefs[showsKey]),
                 showId,
-                EpisodeNumber(season, episode),
+                episodes,
+                isWatched,
                 System.currentTimeMillis(),
             )
             prefs[showsKey] = json.encodeToString(updated)

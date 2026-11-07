@@ -1,15 +1,10 @@
 package dev.codexsoft.codexcine.ui.browse
 
-import android.graphics.Canvas
-import android.graphics.ColorFilter
-import android.graphics.Paint
-import android.graphics.PixelFormat
-import android.graphics.drawable.Drawable
-import androidx.core.content.ContextCompat
 import androidx.leanback.widget.ImageCardView
 import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.data.progress.WatchProgress
 import dev.codexsoft.codexcine.ui.common.BaseCardPresenter
+import dev.codexsoft.codexcine.ui.common.ProgressBarOverlay
 import dev.codexsoft.codexcine.ui.common.runtimeText
 import kotlin.math.ceil
 
@@ -31,42 +26,6 @@ class ContinueWatchingCardPresenter : BaseCardPresenter(widthDp = 264, heightDp 
         }
         card.contentText = listOfNotNull(episode, timeLeft).joinToString(context.getString(R.string.separator))
         card.loadImage(progress.backdropUrl ?: progress.posterUrl)
-        card.setImageOverlay(
-            ProgressBarDrawable(
-                fraction = progress.fraction,
-                barColor = ContextCompat.getColor(context, R.color.selected_background),
-                trackColor = ContextCompat.getColor(context, R.color.player_track),
-                heightPx = BAR_HEIGHT_DP * context.resources.displayMetrics.density,
-            ),
-        )
-    }
-
-    private class ProgressBarDrawable(
-        private val fraction: Float,
-        barColor: Int,
-        trackColor: Int,
-        private val heightPx: Float,
-    ) : Drawable() {
-        private val barPaint = Paint().apply { color = barColor }
-        private val trackPaint = Paint().apply { color = trackColor }
-
-        override fun draw(canvas: Canvas) {
-            val box = bounds
-            val top = box.bottom - heightPx
-            val end = box.left + box.width() * fraction
-            canvas.drawRect(end, top, box.right.toFloat(), box.bottom.toFloat(), trackPaint)
-            canvas.drawRect(box.left.toFloat(), top, end, box.bottom.toFloat(), barPaint)
-        }
-
-        override fun setAlpha(alpha: Int) = Unit
-
-        override fun setColorFilter(colorFilter: ColorFilter?) = Unit
-
-        @Deprecated("Deprecated in Java")
-        override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
-    }
-
-    private companion object {
-        const val BAR_HEIGHT_DP = 5
+        card.setImageOverlay(ProgressBarOverlay(context, progress.fraction))
     }
 }

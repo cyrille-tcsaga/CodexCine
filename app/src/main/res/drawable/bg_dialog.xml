@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The episode menu: an ink card with rounded corners, inset so the dialog keeps its margins. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="16dp">
+    <shape android:shape="rectangle">
+        <solid android:color="@color/brand_ink" />
+        <corners android:radius="16dp" />
+    </shape>
+</inset>

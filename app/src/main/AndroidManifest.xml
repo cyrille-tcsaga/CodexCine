@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Writes the app's own cards in the system "Play next" row. Granted at install, no prompt. -->
+    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -57,6 +59,36 @@
         <activity
             android:name=".ui.error.AboutActivity"
             android:exported="false" />
+
+        <!--
+            Opened by the system home screen's "Play next" row. Exported, so it only accepts
+            codexcine://play links it can check (see PlayLink), and only hands over to the player.
+        -->
+        <activity
+            android:name=".ui.launch.PlayLinkActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data
+                    android:host="play"
+                    android:scheme="codexcine" />
+            </intent-filter>
+        </activity>
+
+        <!-- The system tells the app when the viewer removes one of its "Play next" cards. -->
+        <receiver
+            android:name=".data.watchnext.WatchNextRemovedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.media.tv.action.WATCH_NEXT_PROGRAM_BROWSABLE_DISABLED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

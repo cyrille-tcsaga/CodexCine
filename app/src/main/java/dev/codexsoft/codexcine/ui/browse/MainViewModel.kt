@@ -8,6 +8,7 @@ import dev.codexsoft.codexcine.core.ErrorKind
 import dev.codexsoft.codexcine.data.progress.WatchProgress
 import dev.codexsoft.codexcine.data.progress.WatchProgressRepository
 import dev.codexsoft.codexcine.data.progress.WatchedEpisodesRepository
+import dev.codexsoft.codexcine.data.watchnext.WatchNextPublisher
 import dev.codexsoft.codexcine.data.repository.CatalogRepository
 import dev.codexsoft.codexcine.data.repository.MyListRepository
 import dev.codexsoft.codexcine.domain.model.CategoryType
@@ -41,6 +42,7 @@ class MainViewModel(
     private val myList: MyListRepository,
     private val watchProgress: WatchProgressRepository,
     private val watchedEpisodes: WatchedEpisodesRepository,
+    private val watchNext: WatchNextPublisher,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
 
@@ -104,6 +106,7 @@ class MainViewModel(
                 today = today(),
             )
             publishRows()
+            watchNext.publishNew(newEpisodes)
         }
     }
 

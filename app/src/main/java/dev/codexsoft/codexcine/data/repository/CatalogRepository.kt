@@ -74,6 +74,7 @@ class CatalogRepository(
             CategoryType.GENRE_COMEDY ->
                 api.discoverMoviesByGenre(requireNotNull(category.genreId), page = page).toMoviePage(page)
             CategoryType.CONTINUE_WATCHING,
+            CategoryType.NEW_EPISODES,
             CategoryType.MY_LIST,
             CategoryType.ABOUT -> MediaPage(emptyList(), page, totalPages = page)
         }
@@ -89,6 +90,12 @@ class CatalogRepository(
 
     suspend fun season(tvId: Int, seasonNumber: Int): AppResult<List<Episode>> = call {
         api.getTvSeason(tvId, seasonNumber).episodes.orEmpty().map { it.toEpisode(seasonNumber) }
+    }
+
+    /** The show, with its most recently aired episode (null when TMDB knows none). */
+    suspend fun showWithLastEpisode(tvId: Int): AppResult<Pair<MediaItem, Episode?>> = call {
+        val show = api.getTvSummary(tvId)
+        show.toMediaItem() to show.lastEpisodeToAir?.toEpisode(fallbackSeasonNumber = 0)
     }
 
     suspend fun search(query: String): AppResult<SearchResults> = call {

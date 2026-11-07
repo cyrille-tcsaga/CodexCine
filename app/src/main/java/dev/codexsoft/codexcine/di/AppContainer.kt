@@ -5,6 +5,7 @@ import dev.codexsoft.codexcine.BuildConfig
 import dev.codexsoft.codexcine.data.playback.SampleStreamResolver
 import dev.codexsoft.codexcine.data.playback.StreamSourceResolver
 import dev.codexsoft.codexcine.data.progress.WatchProgressRepository
+import dev.codexsoft.codexcine.data.progress.WatchedEpisodesRepository
 import dev.codexsoft.codexcine.data.remote.RetryInterceptor
 import dev.codexsoft.codexcine.data.remote.TmdbApi
 import dev.codexsoft.codexcine.data.remote.TmdbAuthInterceptor
@@ -58,7 +59,11 @@ class AppContainer(context: Context) {
 
     val myListRepository: MyListRepository by lazy { MyListRepository(appContext) }
 
-    val watchProgressRepository: WatchProgressRepository by lazy { WatchProgressRepository(appContext) }
+    val watchedEpisodesRepository: WatchedEpisodesRepository by lazy { WatchedEpisodesRepository(appContext) }
+
+    val watchProgressRepository: WatchProgressRepository by lazy {
+        WatchProgressRepository(appContext, watchedEpisodesRepository)
+    }
 
     /**
      * For writes that must outlive the screen requesting them, such as saving progress while the

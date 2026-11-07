@@ -91,6 +91,7 @@ data class TmdbTvDetailsDto(
     @SerialName("recommendations") val recommendations: TmdbPaginatedResponse<TmdbTvDto>? = null,
     @SerialName("similar") val similar: TmdbPaginatedResponse<TmdbTvDto>? = null,
     @SerialName("content_ratings") val contentRatings: TmdbContentRatingsDto? = null,
+    @SerialName("last_episode_to_air") val lastEpisodeToAir: TmdbEpisodeDto? = null,
 )
 
 @Serializable

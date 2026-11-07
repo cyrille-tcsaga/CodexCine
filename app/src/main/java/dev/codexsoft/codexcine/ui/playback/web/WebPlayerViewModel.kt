@@ -604,7 +604,8 @@ class WebPlayerViewModel(
         const val SAVE_INTERVAL_MS = 10_000L
         const val MIN_RESUME_POSITION_S = 60.0
         const val NEXT_CARD_LEAD_S = 30.0
-        const val NEXT_COUNTDOWN_S = 10
+        // The ring in view_player_overlay.xml (player_next_ring, android:max) uses the same value.
+        const val NEXT_COUNTDOWN_S = 5
         const val RESTART_THRESHOLD_S = 10.0
         const val VIDEO_ERROR_GRACE_MS = 8_000L
     }

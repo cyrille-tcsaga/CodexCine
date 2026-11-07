@@ -19,6 +19,7 @@ enum class HomePage(
         R.drawable.ic_nav_home,
         listOf(
             CategoryType.CONTINUE_WATCHING,
+            CategoryType.NEW_EPISODES,
             CategoryType.TRENDING,
             CategoryType.MY_LIST,
             CategoryType.POPULAR_MOVIES,
@@ -55,7 +56,7 @@ enum class HomePage(
     MY_LIST(
         R.string.row_my_list,
         R.drawable.ic_nav_my_list,
-        listOf(CategoryType.CONTINUE_WATCHING, CategoryType.MY_LIST),
+        listOf(CategoryType.CONTINUE_WATCHING, CategoryType.NEW_EPISODES, CategoryType.MY_LIST),
         emptyMessageRes = R.string.my_list_empty,
     ),
 }

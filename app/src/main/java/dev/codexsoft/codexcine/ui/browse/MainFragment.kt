@@ -102,6 +102,11 @@ class MainFragment : BrowseSupportFragment() {
 internal fun Fragment.mainViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
     initializer {
         val container = appContainer
-        MainViewModel(container.catalogRepository, container.myListRepository, container.watchProgressRepository)
+        MainViewModel(
+            container.catalogRepository,
+            container.myListRepository,
+            container.watchProgressRepository,
+            container.watchedEpisodesRepository,
+        )
     }
 }

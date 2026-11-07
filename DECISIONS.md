@@ -214,6 +214,22 @@ instead of a top bar, and no footer.
 - **Cast as round portraits** with the name centred underneath (`BaseCardPresenter(circular = true)`), so
   people read apart from titles.
 
+### "Nouveaux épisodes"
+
+- **Which shows**: those in My List, then those in "Continuer à regarder", then those with a watched episode,
+  at most 20. Each costs one `tv/{id}` request without extras, at most 4 at a time, made once per home screen
+  and kept; on resume only the local state is applied again, so a show watched meanwhile drops out at once.
+- **Which episode**: TMDB's `last_episode_to_air`, if it aired in the last 30 days, is past the furthest
+  episode watched, and is not already in "Continuer à regarder". Specials (season 0) are left out.
+- **Watched episodes are recorded separately** (`WatchedEpisodesRepository`, DataStore, 200 shows at most),
+  because a finished episode leaves the progress list. `WatchProgressRepository.save` records it, so the
+  player is unchanged. History starts with this version: episodes finished before it are not known.
+- **The click**: a show already started plays the episode; otherwise its details page opens, since jumping
+  into season 28 of a show never watched makes no sense.
+- **The "Nouveau" tag is drawn** over the still, like the progress bar of "Continuer à regarder":
+  `ImageCardView` has no room for an extra view over its image. TMDB's placeholder titles ("Épisode 5") are
+  hidden, as they only repeat the number.
+
 ### Measured
 
 On a freshly booted API 36 TV emulator (2 GB): 591 frames while browsing the home, 2.9 % janky, median

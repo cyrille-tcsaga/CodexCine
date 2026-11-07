@@ -48,6 +48,17 @@ fun TmdbTvDto.toMediaItem(): MediaItem = MediaItem(
     overview = overview?.takeIf { it.isNotBlank() },
 )
 
+fun TmdbTvDetailsDto.toMediaItem(): MediaItem = MediaItem(
+    id = id,
+    title = name.orEmpty(),
+    posterUrl = ImageUrls.poster(posterPath),
+    backdropUrl = ImageUrls.background(backdropPath),
+    releaseYear = yearOf(firstAirDate),
+    voteAverage = voteAverage ?: 0.0,
+    mediaType = MediaType.TV,
+    overview = overview?.takeIf { it.isNotBlank() },
+)
+
 /** Returns null for a `media_type` other than movie, tv or person. */
 fun TmdbMultiSearchItemDto.toMediaItem(): MediaItem? = when (MediaType.fromValue(mediaType)) {
     MediaType.MOVIE -> MediaItem(

@@ -1,7 +1,9 @@
 package dev.codexsoft.codexcine
 
 import dev.codexsoft.codexcine.core.ImageUrls
+import dev.codexsoft.codexcine.data.mapper.toEpisode
 import dev.codexsoft.codexcine.data.mapper.toMediaDetails
+import dev.codexsoft.codexcine.data.mapper.toMediaItem
 import dev.codexsoft.codexcine.data.mapper.toSearchResults
 import dev.codexsoft.codexcine.data.remote.TmdbJson
 import dev.codexsoft.codexcine.data.remote.dto.TmdbMovieDetailsDto
@@ -62,6 +64,24 @@ class TmdbJsonParsingTest {
         assertNull(details.trailerKey)
         assertEquals(listOf(1, 2), details.seasons.map { it.seasonNumber })
         assertEquals(listOf(1399), details.recommendations.map { it.id })
+    }
+
+    @Test
+    fun `a show's last aired episode`() {
+        val json = """
+            {"id": 1396, "name": "Breaking Bad", "first_air_date": "2008-01-20",
+             "last_episode_to_air": {"id": 62161, "name": "Félina", "air_date": "2013-09-29",
+               "episode_number": 16, "season_number": 5, "still_path": "/pA0YwyhvdDXP3BEGL2grrIhq8aM.jpg"}}
+        """.trimIndent()
+        val show = TmdbJson.decodeFromString<TmdbTvDetailsDto>(json)
+        val episode = requireNotNull(show.lastEpisodeToAir).toEpisode(fallbackSeasonNumber = 0)
+
+        assertEquals("Breaking Bad", show.toMediaItem().title)
+        assertEquals("2008", show.toMediaItem().releaseYear)
+        assertEquals(5, episode.seasonNumber)
+        assertEquals(16, episode.episodeNumber)
+        assertEquals("2013-09-29", episode.airDate)
+        assertEquals("Félina", episode.name)
     }
 
     @Test

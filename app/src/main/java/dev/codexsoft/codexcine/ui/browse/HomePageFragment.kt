@@ -20,6 +20,7 @@ import dev.codexsoft.codexcine.domain.model.CategoryType
 import dev.codexsoft.codexcine.domain.model.HomeRow
 import dev.codexsoft.codexcine.domain.model.MediaItem
 import dev.codexsoft.codexcine.domain.model.MediaType
+import dev.codexsoft.codexcine.domain.model.NewEpisode
 import dev.codexsoft.codexcine.ui.common.appContainer
 import dev.codexsoft.codexcine.ui.common.collectWhileStarted
 import dev.codexsoft.codexcine.ui.common.loadBackgroundBitmap
@@ -53,6 +54,7 @@ class HomePageFragment : RowsSupportFragment() {
     private val cardSelector = ClassPresenterSelector()
         .addClassPresenter(MediaItem::class.java, CardPresenter())
         .addClassPresenter(WatchProgress::class.java, ContinueWatchingCardPresenter())
+        .addClassPresenter(NewEpisode::class.java, NewEpisodeCardPresenter())
         .addClassPresenter(ActionCard::class.java, MoreCardPresenter())
 
     private var billboard: BillboardRow? = null
@@ -68,6 +70,7 @@ class HomePageFragment : RowsSupportFragment() {
             when (item) {
                 is MediaItem -> openMediaItem(item)
                 is WatchProgress -> resume(item)
+                is NewEpisode -> openNewEpisode(item)
                 is ActionCard.SeeAll -> startActivity(
                     GridActivity.newIntent(requireContext(), item.category, item.categoryTitle),
                 )
@@ -80,6 +83,7 @@ class HomePageFragment : RowsSupportFragment() {
                 row is BillboardRow -> updateBackground(featured?.backdropUrl)
                 item is MediaItem -> updateBackground(item.backdropUrl)
                 item is WatchProgress -> updateBackground(item.backdropUrl)
+                item is NewEpisode -> updateBackground(item.show.backdropUrl)
             }
         }
     }
@@ -151,6 +155,8 @@ class HomePageFragment : RowsSupportFragment() {
                     (shown.adapter as ArrayObjectAdapter).setItems(row.items, MediaItemDiff)
                 row.category == CategoryType.CONTINUE_WATCHING ->
                     (shown.adapter as ArrayObjectAdapter).setItems(row.continueWatching, WatchProgressDiff)
+                row.category == CategoryType.NEW_EPISODES ->
+                    (shown.adapter as ArrayObjectAdapter).setItems(row.newEpisodes, NewEpisodeDiff)
             }
         }
 
@@ -163,6 +169,7 @@ class HomePageFragment : RowsSupportFragment() {
         val cards = ArrayObjectAdapter(cardSelector)
         cards.addAll(0, row.items)
         cards.addAll(0, row.continueWatching)
+        cards.addAll(0, row.newEpisodes)
         when {
             row.category == CategoryType.ABOUT -> cards.add(ActionCard.About)
             row.category.isRemote -> cards.add(ActionCard.SeeAll(row.category, title))
@@ -217,6 +224,25 @@ class HomePageFragment : RowsSupportFragment() {
         )
     }
 
+    /** A show already started plays the new episode; otherwise its page opens, to start from the beginning. */
+    private fun openNewEpisode(item: NewEpisode) {
+        val show = item.show
+        if (!item.isShowStarted) {
+            startActivity(DetailsActivity.newIntent(requireContext(), show.id, show.mediaType, show.title))
+            return
+        }
+        startActivity(
+            PlaybackActivity.newIntent(
+                requireContext(),
+                mediaId = show.id,
+                mediaType = MediaType.TV,
+                title = show.title,
+                seasonNumber = item.episode.seasonNumber,
+                episodeNumber = item.episode.episodeNumber,
+            ),
+        )
+    }
+
     /** Waits for the selection to settle, so scrolling through a row does not load every backdrop. */
     private fun updateBackground(url: String?) {
         backgroundJob?.cancel()
@@ -242,6 +268,12 @@ class HomePageFragment : RowsSupportFragment() {
         override fun areItemsTheSame(oldItem: WatchProgress, newItem: WatchProgress) = oldItem.key == newItem.key
 
         override fun areContentsTheSame(oldItem: WatchProgress, newItem: WatchProgress) = oldItem == newItem
+    }
+
+    private object NewEpisodeDiff : DiffCallback<NewEpisode>() {
+        override fun areItemsTheSame(oldItem: NewEpisode, newItem: NewEpisode) = oldItem.show.id == newItem.show.id
+
+        override fun areContentsTheSame(oldItem: NewEpisode, newItem: NewEpisode) = oldItem == newItem
     }
 
     companion object {

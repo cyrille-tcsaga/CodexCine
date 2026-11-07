@@ -75,6 +75,10 @@ interface TmdbApi {
         @Query("include_video_language") includeVideoLanguage: String = "fr,en,null"
     ): TmdbTvDetailsDto
 
+    /** The show alone, without the extras: enough to know its last aired episode. */
+    @GET("tv/{id}")
+    suspend fun getTvSummary(@Path("id") id: Int): TmdbTvDetailsDto
+
     @GET("tv/{id}/season/{season_number}")
     suspend fun getTvSeason(
         @Path("id") tvId: Int,

@@ -389,9 +389,14 @@ class WebPlayerViewModelTest {
 
         vm.onBridgeState(video(time = 975.0))
         runCurrent()
-        assertEquals(10, vm.uiState.value.nextCountdownSeconds)
+        assertEquals(5, vm.uiState.value.nextCountdownSeconds)
 
-        advanceTimeBy(10_001)
+        advanceTimeBy(4_001)
+        runCurrent()
+        assertEquals(1, vm.uiState.value.nextCountdownSeconds)
+        assertEquals(1, vm.uiState.value.request.episodeNumber)
+
+        advanceTimeBy(1_000)
         runCurrent()
         assertEquals(2, vm.uiState.value.request.episodeNumber)
         assertEquals("https://vidzy.org/serie/1/2", page.loaded.last())

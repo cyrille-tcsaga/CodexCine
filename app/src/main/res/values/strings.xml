@@ -24,6 +24,8 @@
     <!-- Home rows -->
     <string name="see_all">Voir tout</string>
     <string name="row_continue_watching">Continuer à regarder</string>
+    <string name="row_new_episodes">Nouveaux épisodes</string>
+    <string name="card_new_tag">NOUVEAU</string>
     <string name="row_my_list">Ma liste</string>
     <string name="row_trending">Tendances de la semaine</string>
     <string name="row_popular_movies">Films populaires</string>

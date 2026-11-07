@@ -70,7 +70,11 @@ interface WatchProgressStore {
     suspend fun remove(key: String)
 }
 
-class WatchProgressRepository(context: Context) : WatchProgressStore {
+/** Finished episodes are also recorded in [watchedEpisodes], since they leave the progress list. */
+class WatchProgressRepository(
+    context: Context,
+    private val watchedEpisodes: WatchedEpisodesRepository,
+) : WatchProgressStore {
 
     private val dataStore = context.applicationContext.watchProgressDataStore
     private val entriesKey = stringPreferencesKey("entries_json")
@@ -100,6 +104,10 @@ class WatchProgressRepository(context: Context) : WatchProgressStore {
         dataStore.edit { prefs ->
             val merged = WatchProgressRules.merge(decode(prefs[entriesKey]), entry, isEnded)
             prefs[entriesKey] = json.encodeToString(merged)
+        }
+        val isFinished = WatchProgressRules.isFinished(entry.positionSeconds, entry.durationSeconds, isEnded)
+        if (isFinished && entry.type == MediaType.TV && entry.episode > 0) {
+            watchedEpisodes.markWatched(entry.tmdbId, entry.season, entry.episode)
         }
     }
 

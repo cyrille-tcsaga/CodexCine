@@ -134,6 +134,23 @@ in software and is too slow to reproduce it faithfully, so these are the finding
 - **Debug diagnostics.** In debug builds the script logs, every 15 s, the playback mode, dropped frames and
   the HTTP status of the stream segments (`CodexDiag` in logcat).
 
+### Ad panels over the video (follow-up)
+
+- **What it was.** A white panel "Confirm you're not a robot" with a QR code, over the video. It is not a
+  check: no real anti-bot test asks to scan a code with a phone. The embed (`vidzy.cc`) loads an obfuscated
+  ad loader from a random-looking domain (`*.rest`, `*.cfd`, `*.cyou`…), which tries to open an ad tab on the
+  first click ("tabup"). The player already refuses that navigation; on a TV the network then shows a panel
+  in the page instead, to be followed on a phone.
+- **A guard in the injected script, not only the blocklist.** Those domains rotate, so the hosts seen were
+  added to `blocklist.txt` but cannot be the fix. The guard, in every frame, hides two things and nothing
+  else: an element whose text is the bait ("not a robot", "scan the QR code"…), and an iframe from another
+  host laid over at least a fifth of the screen outside the player's own box. Anything holding the `<video>`
+  is never touched, and nothing is clicked or answered: hiding is all it does, so no check is bypassed.
+- **Tested** on the emulator with panels injected through DevTools: the bait panel and a full-screen foreign
+  iframe were hidden, a small toast without the bait and the player's controls stayed, playback went on. The
+  real panel could not be made to appear on demand (the network decides when to serve it), so it is still to
+  be confirmed on the box. Debug builds log each hidden element (`CodexGuard` in logcat).
+
 ### Known limits
 
 - **Mixed content is effectively off.** `MIXED_CONTENT_COMPATIBILITY_MODE` is set as requested, but

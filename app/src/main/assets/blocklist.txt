@@ -62,6 +62,17 @@ adf.ly
 fencingnora.click
 s0-greate.net
 
+# Seen on the embed page on 2026-11-08: the ad loader, its pop-under and in-page ad hosts. These
+# rotate; the overlay guard in player_bridge.js covers the ones not listed yet.
+intusepretry.rest
+tannictipcatholl.cfd
+moolahcrowdy.cyou
+usrpubtrck.com
+
 # Trackers
+dtscout.com
+dtscdn.com
+histats.com
+mrktmtrcs.net
 hotjar.com
 mc.yandex.ru

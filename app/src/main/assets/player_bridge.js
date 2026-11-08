@@ -245,3 +245,124 @@
   post({ t: "ready" });
   scan();
 })();
+
+// Ad overlay guard, in every frame. The embed loads ad scripts from domains that change all the time, so a
+// blocklist cannot keep up. On a TV they cannot open their tab, and fall back to a panel over the video, such
+// as a QR code to "confirm you're not a robot". Only two things are hidden, never anything holding a <video>:
+// an element whose text is that bait, and a foreign iframe laid over a large part of the screen, outside the
+// player itself. Hiding is all it does: nothing is clicked or answered.
+(function () {
+  "use strict";
+
+  var DIAGNOSTICS = __DIAGNOSTICS__;
+  var BAIT = /not a robot|pas un robot|are you (a )?human|verify (that )?you('| a)re human|scan (the|this) (qr|code)|scannez (le|ce) (qr|code)/i;
+  var MIN_COVER = 0.2;
+  var TEXT_LIMIT = 2000;
+  var SWEEP_DELAY_MS = 1000;
+
+  if (window.__codexGuardInit) return;
+  window.__codexGuardInit = true;
+
+  var sweepPending = false;
+
+  // The video provider's own hosts. Keep in step with MainFrameHostPolicy.PROVIDER_HOST.
+  function isProviderHost(host) {
+    return /(^|\.)vidzy\.(org|cc)$/i.test(host || "");
+  }
+
+  function hostOf(url) {
+    try {
+      return new URL(url, location.href).hostname;
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function hasVideo(el) {
+    return el.tagName === "VIDEO" || !!(el.querySelector && el.querySelector("video"));
+  }
+
+  function isLaidOver(el) {
+    var position = getComputedStyle(el).position;
+    return position === "fixed" || position === "absolute";
+  }
+
+  function covers(el) {
+    var rect = el.getBoundingClientRect();
+    var screen = (window.innerWidth || 1) * (window.innerHeight || 1);
+    return (rect.width * rect.height) / screen >= MIN_COVER;
+  }
+
+  // The outermost overlay around el that holds no video: the whole panel, not just its title.
+  function overlayRoot(el) {
+    var found = null;
+    for (var node = el; node && node !== document.body && node !== document.documentElement; node = node.parentElement) {
+      if (hasVideo(node)) break;
+      if (isLaidOver(node)) found = node;
+    }
+    return found;
+  }
+
+  function hide(el, reason) {
+    if (!el || el.getAttribute("data-codex-hidden")) return;
+    el.style.setProperty("display", "none", "important");
+    el.setAttribute("data-codex-hidden", reason);
+    if (DIAGNOSTICS) console.log("CodexGuard hid " + reason + " " + el.tagName + " in " + location.hostname);
+  }
+
+  // The player's own box: ads it plays itself (a pre-roll, say) are left alone.
+  function playerBox() {
+    var video = document.querySelector("video");
+    if (!video) return null;
+    return (video.closest && video.closest(".video-js")) || video.parentElement;
+  }
+
+  function checkFrame(frame, box) {
+    if (box && box.contains(frame)) return;
+    var src = frame.getAttribute("src") || "";
+    var foreign = /^https?:/i.test(src) ? !isProviderHost(hostOf(src)) : true;
+    if (!foreign) return;
+    var root = isLaidOver(frame) ? frame : overlayRoot(frame);
+    if (root && !hasVideo(root) && covers(root)) hide(root, "frame");
+  }
+
+  function checkText(el) {
+    var text = el.textContent || "";
+    if (text.length > TEXT_LIMIT || !BAIT.test(text) || hasVideo(el)) return;
+    if (window !== window.top && !isProviderHost(location.hostname)) {
+      // The whole frame is the ad: blank it, its parent hides the frame itself.
+      hide(document.documentElement, "bait");
+      return;
+    }
+    hide(overlayRoot(el) || el, "bait");
+  }
+
+  function sweep() {
+    sweepPending = false;
+    try {
+      var body = document.body;
+      if (!body) return;
+      var box = playerBox();
+      var frames = body.getElementsByTagName("iframe");
+      for (var i = 0; i < frames.length; i++) checkFrame(frames[i], box);
+      var candidates = body.querySelectorAll("div,section,aside,dialog,a,span,p,h1,h2,h3");
+      for (var j = 0; j < candidates.length; j++) {
+        var el = candidates[j];
+        // Only the innermost elements carrying the text, so a short check per element.
+        if (el.children.length <= 3) checkText(el);
+      }
+    } catch (e) {}
+  }
+
+  function scheduleSweep() {
+    if (sweepPending) return;
+    sweepPending = true;
+    setTimeout(sweep, SWEEP_DELAY_MS);
+  }
+
+  try {
+    // Nodes being added is enough: the player's clock rewrites text every second, and is no panel.
+    new MutationObserver(scheduleSweep).observe(document, { childList: true, subtree: true });
+  } catch (e) {}
+  document.addEventListener("DOMContentLoaded", scheduleSweep);
+})();

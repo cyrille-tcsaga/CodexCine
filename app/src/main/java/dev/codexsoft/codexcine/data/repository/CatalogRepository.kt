@@ -9,18 +9,23 @@ import dev.codexsoft.codexcine.data.mapper.toMediaDetails
 import dev.codexsoft.codexcine.data.mapper.toMediaItem
 import dev.codexsoft.codexcine.data.mapper.toPersonDetails
 import dev.codexsoft.codexcine.data.mapper.toSearchResults
+import dev.codexsoft.codexcine.data.mapper.toSaga
 import dev.codexsoft.codexcine.data.mapper.toTrendingItems
 import dev.codexsoft.codexcine.data.remote.TmdbApi
 import dev.codexsoft.codexcine.data.remote.dto.TmdbMovieDto
 import dev.codexsoft.codexcine.data.remote.dto.TmdbPaginatedResponse
 import dev.codexsoft.codexcine.data.remote.dto.TmdbTvDto
 import dev.codexsoft.codexcine.domain.model.CategoryType
+import dev.codexsoft.codexcine.domain.model.DiscoverQuery
+import dev.codexsoft.codexcine.domain.model.Genre
+import dev.codexsoft.codexcine.domain.model.GridFilters
 import dev.codexsoft.codexcine.domain.model.Episode
 import dev.codexsoft.codexcine.domain.model.MediaDetails
 import dev.codexsoft.codexcine.domain.model.MediaItem
 import dev.codexsoft.codexcine.domain.model.MediaPage
 import dev.codexsoft.codexcine.domain.model.MediaType
 import dev.codexsoft.codexcine.domain.model.PersonDetails
+import dev.codexsoft.codexcine.domain.model.Saga
 import dev.codexsoft.codexcine.domain.model.SearchResults
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -91,6 +96,28 @@ class CatalogRepository(
     suspend fun season(tvId: Int, seasonNumber: Int): AppResult<List<Episode>> = call {
         api.getTvSeason(tvId, seasonNumber).episodes.orEmpty().map { it.toEpisode(seasonNumber) }
     }
+
+    /** A category narrowed by [filters]; without any, the category itself. */
+    suspend fun filteredPage(category: CategoryType, filters: GridFilters, page: Int): AppResult<MediaPage> {
+        if (!filters.isActive) return categoryPage(category, page)
+        return call {
+            val params = DiscoverQuery.build(category, filters, LocalDate.now())
+            when (DiscoverQuery.mediaTypeOf(category)) {
+                MediaType.TV -> api.discoverTv(params, page).toTvPage(page)
+                else -> api.discoverMovies(params, page).toMoviePage(page)
+            }
+        }
+    }
+
+    /** TMDB's genres for movies or shows (their ids differ), in French, by name. */
+    suspend fun genres(type: MediaType): AppResult<List<Genre>> = call {
+        val list = if (type == MediaType.TV) api.getTvGenres() else api.getMovieGenres()
+        list.genres.orEmpty()
+            .mapNotNull { dto -> dto.name?.takeIf { it.isNotBlank() }?.let { Genre(dto.id, it) } }
+            .sortedBy { it.name }
+    }
+
+    suspend fun saga(collectionId: Int): AppResult<Saga> = call { api.getCollection(collectionId).toSaga() }
 
     /** The show, with its most recently aired episode (null when TMDB knows none). */
     suspend fun showWithLastEpisode(tvId: Int): AppResult<Pair<MediaItem, Episode?>> = call {

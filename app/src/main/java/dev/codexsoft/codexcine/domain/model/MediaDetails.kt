@@ -18,4 +18,6 @@ data class MediaDetails(
     val cast: List<CastMember>,
     val seasons: List<Season>,
     val recommendations: List<MediaItem>,
+    /** The saga a film belongs to, as a TMDB collection id. Always null for a show. */
+    val collectionId: Int? = null,
 )

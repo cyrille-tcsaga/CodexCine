@@ -12,6 +12,8 @@ import dev.codexsoft.codexcine.data.vidzy.VidzyRepository
 import dev.codexsoft.codexcine.domain.model.MediaDetails
 import dev.codexsoft.codexcine.domain.model.MediaItem
 import dev.codexsoft.codexcine.domain.model.MediaType
+import dev.codexsoft.codexcine.domain.model.SagaRow
+import dev.codexsoft.codexcine.domain.model.SagaRules
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,6 +47,10 @@ class DetailsViewModel(
     private val _playAvailability = MutableStateFlow<PlayAvailability>(PlayAvailability.Unknown)
     val playAvailability: StateFlow<PlayAvailability> = _playAvailability.asStateFlow()
 
+    /** The film's saga, once loaded. Null for a show, a film outside any saga, or a failed request. */
+    private val _saga = MutableStateFlow<SagaRow?>(null)
+    val saga: StateFlow<SagaRow?> = _saga.asStateFlow()
+
     init {
         viewModelScope.launch {
             _playAvailability.value = when (val result = vidzy.availability(mediaId)) {
@@ -55,10 +61,20 @@ class DetailsViewModel(
         viewModelScope.launch {
             when (val result = catalog.details(mediaId, mediaType)) {
                 is AppResult.Error -> _uiState.value = DetailsUiState.Error(result.kind)
-                is AppResult.Success -> myList.contains(mediaId, mediaType).collect { isInList ->
-                    _uiState.value = DetailsUiState.Content(result.data, isInList)
+                is AppResult.Success -> {
+                    result.data.collectionId?.let(::loadSaga)
+                    myList.contains(mediaId, mediaType).collect { isInList ->
+                        _uiState.value = DetailsUiState.Content(result.data, isInList)
+                    }
                 }
             }
+        }
+    }
+
+    private fun loadSaga(collectionId: Int) {
+        viewModelScope.launch {
+            val result = catalog.saga(collectionId)
+            if (result is AppResult.Success) _saga.value = SagaRules.rowFor(result.data, mediaId)
         }
     }
 

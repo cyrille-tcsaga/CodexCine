@@ -10,8 +10,11 @@ import dev.codexsoft.codexcine.ui.common.WatchedOverlay
 import dev.codexsoft.codexcine.ui.common.meaningfulName
 import dev.codexsoft.codexcine.ui.common.runtimeText
 
-/** Landscape 16:9 card for one episode: dimmed and checked once watched, with a bar while part-watched. */
-class EpisodeCardPresenter : BaseCardPresenter(widthDp = 240, heightDp = 135) {
+/**
+ * Landscape 16:9 card for one episode, as wide as the home's, three to a row: dimmed and checked once
+ * watched, with a bar while part-watched.
+ */
+class EpisodeCardPresenter : BaseCardPresenter(widthDp = 264, heightDp = 148) {
 
     /** A long press on OK, for the watched menu. */
     var onLongPress: ((EpisodeItem) -> Unit)? = null

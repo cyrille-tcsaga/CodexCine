@@ -28,6 +28,7 @@ import dev.codexsoft.codexcine.domain.model.CastMember
 import dev.codexsoft.codexcine.domain.model.MediaDetails
 import dev.codexsoft.codexcine.domain.model.MediaItem
 import dev.codexsoft.codexcine.domain.model.MediaType
+import dev.codexsoft.codexcine.domain.model.SagaRow
 import dev.codexsoft.codexcine.domain.model.Season
 import dev.codexsoft.codexcine.ui.browse.CardPresenter
 import dev.codexsoft.codexcine.ui.common.appContainer
@@ -73,6 +74,7 @@ class VideoDetailsFragment : RowsSupportFragment() {
     private lateinit var rows: ArrayObjectAdapter
     private lateinit var hero: DetailsHeroRow
     private var displayedDetails: MediaDetails? = null
+    private var sagaRow: ListRow? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,6 +111,7 @@ class VideoDetailsFragment : RowsSupportFragment() {
         }
         collectWhileStarted(viewModel.uiState, ::render)
         collectWhileStarted(viewModel.playAvailability) { hero.availability = it }
+        collectWhileStarted(viewModel.saga) { showSaga(it) }
     }
 
     override fun onDestroyView() {
@@ -151,6 +154,21 @@ class VideoDetailsFragment : RowsSupportFragment() {
         addRow(R.string.row_seasons, SeasonCardPresenter(), details.seasons)
         addRow(R.string.row_cast, CastCardPresenter(), details.cast)
         addRow(R.string.row_recommendations, CardPresenter(), details.recommendations)
+        sagaRow = null
+        showSaga(viewModel.saga.value)
+    }
+
+    /** Right under the hero: the rest of a saga is what one most often wants next. */
+    private fun showSaga(saga: SagaRow?) {
+        if (saga == null || displayedDetails == null) return
+        sagaRow?.let(rows::remove)
+        val title = saga.position?.let { getString(R.string.row_saga_position, saga.name, it, saga.total) }
+            ?: saga.name
+        val cards = ArrayObjectAdapter(CardPresenter())
+        cards.addAll(0, saga.others)
+        val row = ListRow(HeaderItem(SAGA_ROW_ID, title), cards)
+        rows.add(1, row)
+        sagaRow = row
     }
 
     private fun addRow(titleRes: Int, presenter: Presenter, items: List<Any>) {
@@ -210,5 +228,9 @@ class VideoDetailsFragment : RowsSupportFragment() {
     private fun openSeason(season: Season) {
         val title = displayedDetails?.title ?: initialTitle
         startActivity(SeasonActivity.newIntent(requireContext(), mediaId, season.seasonNumber, title))
+    }
+
+    private companion object {
+        const val SAGA_ROW_ID = -1L
     }
 }

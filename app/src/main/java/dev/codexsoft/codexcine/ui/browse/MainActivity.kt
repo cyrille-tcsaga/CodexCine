@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.Fragment
 import dev.codexsoft.codexcine.ui.common.FragmentHostActivity
+import dev.codexsoft.codexcine.ui.update.UpdatePrompt
 
 class MainActivity : FragmentHostActivity() {
 
@@ -20,7 +21,10 @@ class MainActivity : FragmentHostActivity() {
     override fun createContentFragment(): Fragment = MainFragment()
 
     fun onHomeReady() {
+        if (isHomeReady) return
         isHomeReady = true
+        // Once the home is up, so that an update offer never sits on the splash screen.
+        UpdatePrompt.offerIfAny(this)
     }
 
     private companion object {

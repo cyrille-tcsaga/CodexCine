@@ -1,5 +1,6 @@
 package dev.codexsoft.codexcine.ui.common
 
+import android.app.Activity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -13,7 +14,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 val Fragment.appContainer: AppContainer
-    get() = (requireActivity().application as CodexCineApp).container
+    get() = requireActivity().appContainer
+
+val Activity.appContainer: AppContainer
+    get() = (application as CodexCineApp).container
 
 /** Collects a flow on the main thread while this fragment's view is at least started. */
 fun <T> Fragment.collectWhileStarted(flow: Flow<T>, collector: (T) -> Unit) {

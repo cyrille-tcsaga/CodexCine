@@ -4,6 +4,7 @@ import dev.codexsoft.codexcine.data.remote.dto.*
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.QueryMap
 
 private const val LATEST_MIN_VOTES = 10
 
@@ -74,6 +75,28 @@ interface TmdbApi {
         @Query("append_to_response") appendToResponse: String = "credits,videos,recommendations,similar,content_ratings",
         @Query("include_video_language") includeVideoLanguage: String = "fr,en,null"
     ): TmdbTvDetailsDto
+
+    /** Filtered "Voir tout" grids: the parameters come from DiscoverQuery. */
+    @GET("discover/movie")
+    suspend fun discoverMovies(
+        @QueryMap params: Map<String, String>,
+        @Query("page") page: Int = 1
+    ): TmdbPaginatedResponse<TmdbMovieDto>
+
+    @GET("discover/tv")
+    suspend fun discoverTv(
+        @QueryMap params: Map<String, String>,
+        @Query("page") page: Int = 1
+    ): TmdbPaginatedResponse<TmdbTvDto>
+
+    @GET("genre/movie/list")
+    suspend fun getMovieGenres(): TmdbGenreListDto
+
+    @GET("genre/tv/list")
+    suspend fun getTvGenres(): TmdbGenreListDto
+
+    @GET("collection/{id}")
+    suspend fun getCollection(@Path("id") id: Int): TmdbCollectionDto
 
     /** The show alone, without the extras: enough to know its last aired episode. */
     @GET("tv/{id}")

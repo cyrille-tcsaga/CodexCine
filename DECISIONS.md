@@ -277,9 +277,59 @@ instead of a top bar, and no footer.
   anything else opens the home. It starts the player with the app's home behind it, so Back stays in the app.
 - **Channels (an app row of its own) are not published**: Google TV no longer shows them, and the Mi Box's
   launcher already shows "Play next".
-- **Not verified on Google TV.** On the Android TV emulator the cards appear in "Play next" and open the
-  player. Whether Google TV's "Continue watching" row accepts an app outside its partner programme can only
-  be checked on the Xiaomi TV Box S.
+- **Android TV only, not Google TV.** On the Android TV emulator the cards appear in "Play next" and open
+  the player. Google TV's "Continue watching" row now takes its content from the Engage SDK, which is
+  allowlisted: Google grants access to partners and reviews each APK. Watch Next stays supported on Android TV
+  devices (the Mi Box), not on Google TV (the Xiaomi TV Box S). Engage was not pursued for a sideloaded app.
+
+### Season screen
+
+- **Three wide cards to a row** (264 × 148 dp, as on the home). Four of 240 dp were wider than the 960 dp
+  screen, so the first column slid off the left edge as the focus moved right.
+
+### Sagas (details screen)
+
+- **TMDB's collections.** A film's `belongs_to_collection` gives the saga; `collection/{id}` its films. The
+  row sits right under the hero, titled with the saga and the film's place ("… · film 3 sur 8"), and lists the
+  other films in release order, undated (announced) ones last. It is loaded after the page, so it never delays
+  it, and a failed request just leaves it out.
+
+### Filters on "Voir tout" grids
+
+- **The filters button takes the search orb's place** in the grid's title bar (`FilterTitleView` is the
+  title view; to Leanback the button is the search affordance), so the focus reaches it by going up from the
+  grid, as Leanback screens do. A plain `AlertDialog` per choice, like the episode menu.
+- **Genre, decade, minimum rating, sort.** With any filter on, the grid comes from `discover/movie|tv`
+  (`DiscoverQuery`), keeping the category's meaning: best rated stays sorted by rating with a vote floor, in
+  cinemas and upcoming keep their date window (and offer no decade), a genre row keeps its genre. A minimum
+  rating or a rating sort asks for enough votes for the rating to mean something. Trending mixes movies and
+  shows, which `discover` cannot: it has no filters.
+- **Changing filters starts again from page 1**; a page still loading for the old filters is dropped. With
+  no result, a toast says so and the focus goes back to the button.
+
+### Searching from outside the app
+
+- **The Assistant's search action and `ACTION_SEARCH`** open the search screen, which searches the query at
+  once instead of listening ("cherche Dune sur Codex Ciné"). The query is cleaned (control characters, 100
+  characters at most) and only ever searched, so the exported screen exposes nothing else.
+- **System search suggestions** (`SearchSuggestionProvider`, `searchable.xml`): movies and shows, alternating,
+  ten at most, each opening its page through `codexcine://details/…`. Only the system may read the provider
+  (`GLOBAL_SEARCH`). Like "Play next", this is for Android TV's launcher: Google TV's search shows its own
+  catalogue only.
+
+### Updates from GitHub
+
+- **A tag makes a release.** `git tag v1.2.0 && git push origin v1.2.0` runs `.github/workflows/release.yml`:
+  tests, lint, then the APK signed with the release key, published as a GitHub release. The version (and the
+  version code, `major × 10000 + minor × 100 + patch`) comes from the tag, through `-PappVersion`.
+- **The app offers it.** On the home, at most every 12 hours, it reads the latest release of
+  `UPDATE_REPOSITORY`, offers a newer version once (a version put off is not offered again), downloads the
+  APK and hands it to `PackageInstaller`. Android asks the viewer to confirm, once to let the app install
+  apps, then for each update; it refuses an APK not signed with the installed app's key, so a tampered
+  download cannot replace it. Only https downloads from GitHub's hosts, under 100 MB, are followed.
+- **The repository must be public**: the app carries no GitHub credentials. Releases can go to a separate
+  public repository while the code stays private (`RELEASES_TOKEN` and the `UPDATE_REPOSITORY` variable).
+  GitHub is reached through its own HTTP client, so the TMDB token never goes there.
 
 ### Measured
 

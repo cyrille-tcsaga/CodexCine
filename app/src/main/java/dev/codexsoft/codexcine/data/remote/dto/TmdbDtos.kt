@@ -71,6 +71,26 @@ data class TmdbMovieDetailsDto(
     @SerialName("recommendations") val recommendations: TmdbPaginatedResponse<TmdbMovieDto>? = null,
     @SerialName("similar") val similar: TmdbPaginatedResponse<TmdbMovieDto>? = null,
     @SerialName("release_dates") val releaseDates: TmdbReleaseDatesDto? = null,
+    @SerialName("belongs_to_collection") val belongsToCollection: TmdbCollectionRefDto? = null,
+)
+
+@Serializable
+data class TmdbGenreListDto(
+    @SerialName("genres") val genres: List<TmdbGenreDto>? = null,
+)
+
+@Serializable
+data class TmdbCollectionRefDto(
+    @SerialName("id") val id: Int,
+    @SerialName("name") val name: String? = null,
+)
+
+/** A saga: the films TMDB groups together, such as every Harry Potter. */
+@Serializable
+data class TmdbCollectionDto(
+    @SerialName("id") val id: Int,
+    @SerialName("name") val name: String? = null,
+    @SerialName("parts") val parts: List<TmdbMovieDto>? = null,
 )
 
 @Serializable

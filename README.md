@@ -196,6 +196,32 @@ RELEASE_KEY_PASSWORD=…
 `app-release-unsigned.apk`, qui ne peut pas être installé tel quel. Gardez une copie du fichier de clés
 ailleurs : sans lui, les mises à jour ne s'installeront plus par-dessus l'application.
 
+### Publier une version (mise à jour automatique)
+
+Un tag de version déclenche `.github/workflows/release.yml`, qui teste, signe et publie l'APK :
+
+```bash
+git tag -a v1.2.0 -m "Ce qui change dans cette version"
+git push origin v1.2.0
+```
+
+L'application vérifie la dernière release au plus toutes les 12 heures et propose de l'installer. Le
+dépôt des releases doit être **public** (l'app n'embarque aucun identifiant GitHub). Le code peut rester
+privé si les releases vont dans un dépôt public à part.
+
+Réglages du dépôt GitHub (Settings > Secrets and variables > Actions) :
+
+| Nom | Type | Contenu |
+| --- | --- | --- |
+| `TMDB_ACCESS_TOKEN` | secret | le jeton TMDB |
+| `RELEASE_KEYSTORE_BASE64` | secret | le fichier de clés en base64 (`base64 -i codexcine.jks`) |
+| `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD` | secrets | comme dans `local.properties` |
+| `RELEASES_TOKEN` | secret | seulement si les releases vont dans un autre dépôt : un jeton qui peut y écrire |
+| `UPDATE_REPOSITORY` | variable | `propriétaire/nom` du dépôt public des releases |
+
+Pour un APK local qui vérifie les mises à jour, ajoutez `UPDATE_REPOSITORY=propriétaire/nom` à
+`local.properties`.
+
 Les choix techniques sont documentés (en anglais) dans [`DECISIONS.md`](DECISIONS.md).
 
 ## Attribution

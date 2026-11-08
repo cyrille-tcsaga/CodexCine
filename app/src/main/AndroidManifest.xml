@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Writes the app's own cards in the system "Play next" row. Granted at install, no prompt. -->
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
+    <!-- Installs its own updates from GitHub. Android still asks the viewer, once to allow it, then each time. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -50,9 +52,35 @@
         <activity
             android:name=".ui.person.PersonActivity"
             android:exported="false" />
+        <!--
+            Exported for searches from outside: the system search and the Assistant ("cherche Dune sur
+            Codex Ciné"). The query is cleaned and only ever searched (see SearchFragment).
+        -->
         <activity
             android:name=".ui.search.SearchActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.actions.SEARCH_ACTION" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+
+        <!-- Titles for the system search. Only the system may read it. -->
+        <provider
+            android:name=".ui.search.SearchSuggestionProvider"
+            android:authorities="dev.codexsoft.codexcine.search"
+            android:exported="true"
+            android:readPermission="android.permission.GLOBAL_SEARCH" />
         <activity
             android:name=".ui.playback.PlaybackActivity"
             android:exported="false" />
@@ -61,8 +89,8 @@
             android:exported="false" />
 
         <!--
-            Opened by the system home screen's "Play next" row. Exported, so it only accepts
-            codexcine://play links it can check (see PlayLink), and only hands over to the player.
+            Opened by the system home screen's "Play next" row and the system search. Exported, so it only
+            accepts codexcine://play and codexcine://details links it can check (see AppLink).
         -->
         <activity
             android:name=".ui.launch.PlayLinkActivity"
@@ -75,11 +103,16 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
 
-                <data
-                    android:host="play"
-                    android:scheme="codexcine" />
+                <data android:scheme="codexcine" />
+                <data android:host="play" />
+                <data android:host="details" />
             </intent-filter>
         </activity>
+
+        <!-- The installer's answer to an update. Not exported: only the system calls it, through a PendingIntent. -->
+        <receiver
+            android:name=".data.update.InstallResultReceiver"
+            android:exported="false" />
 
         <!-- The system tells the app when the viewer removes one of its "Play next" cards. -->
         <receiver

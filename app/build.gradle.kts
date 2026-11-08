@@ -17,6 +17,17 @@ val tmdbAccessToken = localProperties.getProperty("TMDB_ACCESS_TOKEN").orEmpty()
 val useSampleStream = localProperties.getProperty("USE_SAMPLE_STREAM")?.trim().toBoolean()
 val webPlayerTvMode = localProperties.getProperty("WEB_PLAYER_TV_MODE")?.trim().toBoolean()
 
+// The release number, "1.2.0": from -PappVersion (the CI passes the Git tag), else the default below.
+// The version code follows from it, so that each release installs over the previous one.
+val appVersion = providers.gradleProperty("appVersion").orNull?.removePrefix("v") ?: "1.1.0"
+val appVersionCode = appVersion.split('.').map { it.toInt() }.let { (major, minor, patch) ->
+    major * 10_000 + minor * 100 + patch
+}
+
+// The public GitHub repository ("owner/name") whose releases the app offers as updates. Empty: no check.
+val updateRepository = (providers.gradleProperty("updateRepository").orNull
+    ?: localProperties.getProperty("UPDATE_REPOSITORY")).orEmpty().trim()
+
 // Release signing: the keystore and its passwords stay outside the repository, named in local.properties.
 // Without all four values the release build is left unsigned.
 val releaseStoreFile = localProperties.getProperty("RELEASE_STORE_FILE")?.trim()?.takeIf { it.isNotEmpty() }
@@ -34,11 +45,12 @@ android {
         applicationId = "dev.codexsoft.codexcine"
         minSdk = 28
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersion
 
         buildConfigField("String", "TMDB_ACCESS_TOKEN", "\"$tmdbAccessToken\"")
         buildConfigField("boolean", "WEB_PLAYER_TV_MODE", webPlayerTvMode.toString())
+        buildConfigField("String", "UPDATE_REPOSITORY", "\"$updateRepository\"")
     }
 
     buildFeatures {

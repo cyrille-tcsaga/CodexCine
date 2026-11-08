@@ -1,6 +1,8 @@
 package dev.codexsoft.codexcine.ui.search
 
 import dev.codexsoft.codexcine.ui.common.cardRowPresenter
+import android.app.SearchManager
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -58,6 +60,18 @@ class SearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchResu
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         collectWhileStarted(viewModel.uiState, ::render)
+        if (savedInstanceState == null) searchExternalQuery()
+    }
+
+    /**
+     * Opened with a query, by the system search or the Assistant ("cherche Dune sur Codex Ciné"): search it
+     * at once instead of listening. Any app can send one, so it is cleaned first; it is only ever searched.
+     */
+    private fun searchExternalQuery() {
+        val intent = requireActivity().intent
+        if (intent.action !in EXTERNAL_SEARCH_ACTIONS) return
+        val query = SearchSuggestions.cleanQuery(intent.getStringExtra(SearchManager.QUERY)) ?: return
+        setSearchQuery(query, true)
     }
 
     override fun getResultsAdapter(): ObjectAdapter = results
@@ -106,5 +120,9 @@ class SearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchResu
         ErrorKind.INVALID_TOKEN -> R.string.error_invalid_token
         ErrorKind.NO_CONNECTION -> R.string.error_no_connection
         ErrorKind.GENERIC -> R.string.error_generic
+    }
+
+    private companion object {
+        val EXTERNAL_SEARCH_ACTIONS = setOf(Intent.ACTION_SEARCH, "com.google.android.gms.actions.SEARCH_ACTION")
     }
 }

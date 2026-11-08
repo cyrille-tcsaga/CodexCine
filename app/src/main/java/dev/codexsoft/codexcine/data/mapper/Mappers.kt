@@ -2,6 +2,7 @@ package dev.codexsoft.codexcine.data.mapper
 
 import dev.codexsoft.codexcine.core.ImageUrls
 import dev.codexsoft.codexcine.data.remote.dto.TmdbCastDto
+import dev.codexsoft.codexcine.data.remote.dto.TmdbCollectionDto
 import dev.codexsoft.codexcine.data.remote.dto.TmdbContentRatingsDto
 import dev.codexsoft.codexcine.data.remote.dto.TmdbEpisodeDto
 import dev.codexsoft.codexcine.data.remote.dto.TmdbMovieDetailsDto
@@ -17,6 +18,7 @@ import dev.codexsoft.codexcine.data.remote.dto.TmdbVideosDto
 import dev.codexsoft.codexcine.domain.model.CastMember
 import dev.codexsoft.codexcine.domain.model.Episode
 import dev.codexsoft.codexcine.domain.model.MediaDetails
+import dev.codexsoft.codexcine.domain.model.Saga
 import dev.codexsoft.codexcine.domain.model.MediaItem
 import dev.codexsoft.codexcine.domain.model.MediaType
 import dev.codexsoft.codexcine.domain.model.PersonDetails
@@ -126,8 +128,14 @@ fun TmdbMovieDetailsDto.toMediaDetails(): MediaDetails {
         cast = credits?.cast.orEmpty().take(MAX_CAST).map { it.toCastMember() },
         seasons = emptyList(),
         recommendations = recommended.map { it.toMediaItem() },
+        collectionId = belongsToCollection?.id,
     )
 }
+
+fun TmdbCollectionDto.toSaga(): Saga = Saga(
+    name = name.orEmpty(),
+    parts = parts.orEmpty().map { it.toMediaItem() to it.releaseDate },
+)
 
 fun TmdbTvDetailsDto.toMediaDetails(): MediaDetails {
     val recommended = recommendations?.results.orEmpty().ifEmpty { similar?.results.orEmpty() }

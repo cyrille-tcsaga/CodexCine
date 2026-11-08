@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.codexsoft.codexcine.core.AppResult
 import dev.codexsoft.codexcine.core.ErrorKind
+import dev.codexsoft.codexcine.domain.model.GridFilters
 import dev.codexsoft.codexcine.domain.model.MediaItem
 import dev.codexsoft.codexcine.domain.model.MediaPage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,17 +19,24 @@ sealed interface GridUiState {
     data class Error(val kind: ErrorKind) : GridUiState
 }
 
+/** A paged grid of titles. Changing the filters starts again from the first page. */
 class GridViewModel(
-    private val loadPage: suspend (page: Int) -> AppResult<MediaPage>,
+    private val loadPage: suspend (filters: GridFilters, page: Int) -> AppResult<MediaPage>,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<GridUiState>(GridUiState.Loading)
     val uiState: StateFlow<GridUiState> = _uiState.asStateFlow()
 
+    private val _filters = MutableStateFlow(GridFilters())
+    val filters: StateFlow<GridFilters> = _filters.asStateFlow()
+
     private val items = mutableListOf<MediaItem>()
     private var nextPage = 1
     private var totalPages = Int.MAX_VALUE
     private var isLoading = false
+
+    /** Bumped on every restart, so that a page still loading for the old filters is ignored. */
+    private var generation = 0
 
     init {
         loadNextPage()
@@ -38,11 +46,26 @@ class GridViewModel(
         if (position >= items.size - PRELOAD_THRESHOLD) loadNextPage()
     }
 
+    fun setFilters(filters: GridFilters) {
+        if (filters == _filters.value) return
+        _filters.value = filters
+        generation++
+        items.clear()
+        nextPage = 1
+        totalPages = Int.MAX_VALUE
+        isLoading = false
+        _uiState.value = GridUiState.Loading
+        loadNextPage()
+    }
+
     private fun loadNextPage() {
         if (isLoading || nextPage > totalPages) return
         isLoading = true
+        val requested = generation
         viewModelScope.launch {
-            when (val result = loadPage(nextPage)) {
+            val result = loadPage(_filters.value, nextPage)
+            if (requested != generation) return@launch
+            when (result) {
                 is AppResult.Success -> {
                     // TMDB reshuffles popularity lists between requests, so pages can overlap.
                     val known = items.mapTo(HashSet()) { it.mediaType to it.id }

@@ -25,6 +25,25 @@
     <string name="see_all">Voir tout</string>
     <string name="row_continue_watching">Continuer à regarder</string>
     <string name="row_new_episodes">Nouveaux épisodes</string>
+
+    <!-- "Voir tout" grid filters -->
+    <string name="grid_filters">Filtres</string>
+    <string name="grid_filters_count">Filtres (%1$d)</string>
+    <string name="grid_filters_no_result">Aucun titre ne correspond à ces filtres</string>
+    <string name="grid_filters_genres_error">Les genres n\'ont pas pu être chargés</string>
+    <string name="filter_entry">%1$s : %2$s</string>
+    <string name="filter_any">Tous</string>
+    <string name="filter_genre">Genre</string>
+    <string name="filter_decade">Décennie</string>
+    <string name="filter_decade_value">Années %1$d</string>
+    <string name="filter_rating">Note minimale</string>
+    <string name="filter_rating_value">★ %1$d et plus</string>
+    <string name="filter_sort">Trier par</string>
+    <string name="filter_sort_default">Par défaut</string>
+    <string name="filter_sort_popularity">Popularité</string>
+    <string name="filter_sort_rating">Mieux notés</string>
+    <string name="filter_sort_newest">Plus récents</string>
+    <string name="filter_reset">Effacer les filtres</string>
     <string name="card_new_tag">NOUVEAU</string>
     <string name="row_my_list">Ma liste</string>
     <string name="row_trending">Tendances de la semaine</string>
@@ -62,6 +81,8 @@
     <string name="row_seasons">Saisons</string>
     <string name="row_cast">Casting</string>
     <string name="row_recommendations">Recommandations</string>
+    <!-- A saga row: the collection's name as TMDB gives it, then where this film sits in it. -->
+    <string name="row_saga_position">%1$s · film %2$d sur %3$d</string>
     <string name="runtime_hours_minutes">%1$d h %2$d min</string>
     <string name="runtime_hours">%1$d h</string>
     <string name="runtime_minutes">%1$d min</string>
@@ -92,6 +113,17 @@
 
     <!-- Search -->
     <string name="search_no_results">Aucun résultat pour « %1$s »</string>
+    <string name="search_hint">Films et séries</string>
+
+    <!-- Updates from GitHub -->
+    <string name="update_title">Mise à jour disponible</string>
+    <string name="update_message">Codex Ciné %1$s est disponible.</string>
+    <string name="update_install">Mettre à jour</string>
+    <string name="update_later">Plus tard</string>
+    <string name="update_downloading">Téléchargement de la mise à jour…</string>
+    <string name="update_failed">La mise à jour n\'a pas pu être installée</string>
+    <string name="update_allow_install">Autorisez Codex Ciné à installer des applications, puis relancez l\'app pour mettre à jour</string>
+    <string name="search_settings_description">Films et séries de Codex Ciné</string>
     <string name="row_movies">Films</string>
     <string name="row_tv_shows">Séries</string>
     <string name="row_people">Personnes</string>

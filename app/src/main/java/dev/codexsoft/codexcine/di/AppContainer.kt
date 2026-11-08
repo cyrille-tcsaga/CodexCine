@@ -6,6 +6,9 @@ import dev.codexsoft.codexcine.data.playback.SampleStreamResolver
 import dev.codexsoft.codexcine.data.playback.StreamSourceResolver
 import dev.codexsoft.codexcine.data.progress.WatchProgressRepository
 import dev.codexsoft.codexcine.data.progress.WatchedEpisodesRepository
+import dev.codexsoft.codexcine.data.update.ApkInstaller
+import dev.codexsoft.codexcine.data.update.AppVersion
+import dev.codexsoft.codexcine.data.update.UpdateRepository
 import dev.codexsoft.codexcine.data.watchnext.WatchNextPublisher
 import dev.codexsoft.codexcine.data.remote.RetryInterceptor
 import dev.codexsoft.codexcine.data.remote.TmdbApi
@@ -67,6 +70,17 @@ class AppContainer(context: Context) {
     }
 
     val watchNextPublisher: WatchNextPublisher by lazy { WatchNextPublisher(appContext, persistenceScope) }
+
+    /** Deliberately separate from [okHttpClient]: the TMDB token must never reach GitHub. */
+    val updateRepository: UpdateRepository by lazy {
+        val client = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
+        UpdateRepository(client, BuildConfig.UPDATE_REPOSITORY, AppVersion.parse(BuildConfig.VERSION_NAME))
+    }
+
+    val apkInstaller: ApkInstaller by lazy { ApkInstaller(appContext) }
 
     /**
      * For writes that must outlive the screen requesting them, such as saving progress while the

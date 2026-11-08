@@ -20,7 +20,7 @@ import dev.codexsoft.codexcine.ui.common.showErrorScreen
 import dev.codexsoft.codexcine.ui.playback.PlaybackActivity
 
 /** A season's episodes. A long press on OK marks them watched or not. */
-class SeasonFragment : BaseGridFragment(columns = 4, cardPresenter = EpisodeCardPresenter()) {
+class SeasonFragment : BaseGridFragment(columns = 3, cardPresenter = EpisodeCardPresenter()) {
 
     private val showId get() = requireActivity().intent.getIntExtra(Extras.MEDIA_ID, Extras.NO_VALUE)
     private val seasonNumber get() = requireActivity().intent.getIntExtra(Extras.SEASON_NUMBER, Extras.NO_VALUE)

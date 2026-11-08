@@ -32,6 +32,9 @@ jobs:
           java-version: "21"
 
       - uses: android-actions/setup-android@v3
+        with:
+          # The default also asks for "tools", which the SDK no longer ships.
+          packages: platform-tools
 
       - uses: gradle/actions/setup-gradle@v4
 

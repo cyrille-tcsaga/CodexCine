@@ -52,6 +52,8 @@ android {
         buildConfigField("String", "TMDB_ACCESS_TOKEN", "\"$tmdbAccessToken\"")
         buildConfigField("boolean", "WEB_PLAYER_TV_MODE", webPlayerTvMode.toString())
         buildConfigField("String", "UPDATE_REPOSITORY", "\"$updateRepository\"")
+        // Screens that use Compose by default, comma separated (names of ComposeScreen), or "all". Empty: Leanback.
+        buildConfigField("String", "COMPOSE_SCREENS", "\"${providers.gradleProperty("composeScreens").getOrElse("")}\"")
     }
 
     buildFeatures {

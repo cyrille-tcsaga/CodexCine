@@ -476,5 +476,24 @@ with Leanback kept until the new screen passes its checklist.
   `lifecycle-runtime-compose` `2.11.0`. The Compose compiler plugin follows the Kotlin version (`2.2.10`).
 - Reference measures taken before and after, with no screen migrated yet:
   - Release APK (R8): 3 937 445 bytes before, 4 041 860 after (+2.6 %).
-  - Cold start on the `Television_1080p` emulator: about 17 s (`am start -W`, software emulator, only
-    useful as a before/after comparison on the same machine).
+  - The cold start noted at the time (17 s) was a first launch on a fresh emulator and is not a valid
+    reference: see the measures under US-03.
+
+### US-03: safety net
+
+- **Flags.** `ComposeFlags` / `ComposeScreen` choose Compose or Leanback per screen. Default: Leanback.
+  The default comes from the Gradle property `composeScreens` (`-PcomposeScreens=details,error` or `all`).
+  A debug build can switch at run time, without rebuilding:
+  `adb -s emulator-5554 shell am broadcast -n dev.codexsoft.codexcine/.ui.compose.ComposeFlagsReceiver --es screens details`
+  (`reset` goes back to the build default).
+- **Host.** `ComposeScreenFragment` hosts a screen in `FragmentHostActivity`, so the Leanback error screen can
+  replace it and Retry recreates it. Verified with a debug demo. A screen must request its own initial focus:
+  after a retry nothing is focused by default.
+- **Tools.** `tools/gate.sh` (unit tests, debug build, lint) and `tools/smoke.sh` (opens home, details of a
+  film, a saga film and a show, season, grid, person, search and about on the emulator, fails on any crash).
+  `ui/compose/DebugLaunchActivity` (debug only) opens any screen from adb.
+- **Reference measures, Leanback home, `Television_1080p` emulator** (same machine for every comparison):
+  - Cold start (`am start -W`, `MainActivity`): 2 412, 2 208, 2 500 ms.
+  - After 8 Down and 10 Right key presses on the home: 266 frames, 17 janky (6.39 %), 50th percentile
+    18 ms, 90th 29 ms, 95th 32 ms.
+  - Memory right after that: PSS 131 962 kB.

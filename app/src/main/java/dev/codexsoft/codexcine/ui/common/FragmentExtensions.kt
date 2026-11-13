@@ -9,7 +9,7 @@ import dev.codexsoft.codexcine.CodexCineApp
 import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.core.ErrorKind
 import dev.codexsoft.codexcine.di.AppContainer
-import dev.codexsoft.codexcine.ui.error.ErrorFragment
+import dev.codexsoft.codexcine.ui.error.errorScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
@@ -41,6 +41,6 @@ fun Fragment.showErrorScreen(kind: ErrorKind) {
 }
 
 fun Fragment.showErrorScreen(message: String, retryable: Boolean, title: String? = null) {
-    val fragment = ErrorFragment.newInstance(message, retryable, title)
+    val fragment = errorScreen(requireContext(), message, retryable, title)
     (activity as? FragmentHostActivity)?.showError(fragment)
 }

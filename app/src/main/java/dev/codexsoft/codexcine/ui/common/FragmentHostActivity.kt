@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
-import dev.codexsoft.codexcine.ui.error.ErrorFragment
 
 /**
  * Hosts one screen fragment, which an error screen can replace.
@@ -29,7 +28,7 @@ abstract class FragmentHostActivity : FragmentActivity() {
         }
     }
 
-    fun showError(fragment: ErrorFragment) {
+    fun showError(fragment: Fragment) {
         supportFragmentManager.commit {
             replace(android.R.id.content, fragment)
         }

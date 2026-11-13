@@ -515,3 +515,13 @@ with Leanback kept until the new screen passes its checklist.
   `androidTest` or Robolectric setup. The press logic is covered by `DpadPressTrackerTest`, and the debug
   gallery (`ComposeGalleryActivity`) was driven on the emulator with `input keyevent --longpress`: a click
   prints "clic", a held OK prints "LONG" and no click follows.
+
+### US-05 and US-06: error and About screens
+
+- `errorScreen(...)` (ui/error/ErrorScreen.kt) is the only way to ask for an error screen. It returns the
+  Compose `ComposeErrorFragment` or the Leanback `ErrorFragment` depending on the `ERROR` flag (`ABOUT` for
+  the About screen, which is an error-style screen with the logo). Both read the same arguments.
+- `FragmentHostActivity.showError` now takes any `Fragment`. Retry still calls `showContent()`; a screen
+  that is not retryable closes the activity.
+- `PillButton` (ui/compose/components) is the shared rounded button; the error screen's button takes the
+  focus when the screen opens.

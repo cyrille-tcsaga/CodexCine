@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -24,7 +23,6 @@ import androidx.compose.ui.unit.dp
 
 private val ColumnGap = 8.dp
 private val EdgePadding = 12.dp
-private const val INITIAL_FOCUS_ATTEMPTS = 20
 
 /**
  * A grid of [columns] cards of [cardWidth] dp, centred like Leanback's `VerticalGridPresenter`. Keyed, so
@@ -46,12 +44,7 @@ fun <T> CardGrid(
     val gridFocus = remember { FocusRequester() }
     // Leanback selects the first card by itself; here the grid asks for the focus once it has cards.
     LaunchedEffect(items.isNotEmpty()) {
-        if (items.isEmpty()) return@LaunchedEffect
-        // The cards exist only after a layout pass, and the window may not have the focus yet: try again.
-        repeat(INITIAL_FOCUS_ATTEMPTS) {
-            withFrameNanos { }
-            if (runCatching { gridFocus.requestFocus() }.getOrDefault(false)) return@LaunchedEffect
-        }
+        if (items.isNotEmpty()) gridFocus.requestFocusWhenReady()
     }
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LazyVerticalGrid(

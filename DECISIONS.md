@@ -603,3 +603,24 @@ with Leanback kept until the new screen passes its checklist.
 - The pages still show only their name: rows come with US-14, the billboard and the background with US-15,
   the long-press menu with US-16. **Do not enable `HOME` before US-16.**
 - Verified on the emulator: Back opens the sidebar on the first entry, Down shows Films, Right closes it.
+
+### US-14: home rows (HOME flag, still unfinished until US-16)
+
+- A page is a `LazyColumn` of `CardRow`s in the order of `HomePage.categories`, built from the shared
+  `MainViewModel` state. Rows are keyed by category and cards by a String (`m:`, `w:`, `n:`, `all`, `about`),
+  so a row arriving late, a title leaving "Ma liste" or a card leaving "Continuer à regarder" keeps the focus
+  where it is. Empty pages show their message (`my_list_empty`). The shared card actions (play, new
+  episode, "Voir tout", "À propos") moved to `HomeActions.kt`, used by both homes.
+- **Sidebar and focus.**
+  - Left on the first card of a row opens the sidebar (`LocalLeftEdge`, read by `CardRow`): it is more
+    reliable than trying a focus move and seeing it fail.
+  - A page never takes the focus while the sidebar is open: the new page created by Down on an entry used
+    to grab it, which left the sidebar open over a focused card. When the focus is in the page the sidebar
+    closes, whatever the way it got there.
+  - The search button and the logo fade out once the page scrolls, and cannot be focused then.
+- **Initial focus is time-based** (`requestFocusWhenReady`: up to 60 tries, 100 ms apart). A screen that has
+  just opened often cannot take the focus for a while (items not laid out, window not focused yet); the
+  earlier 20-frame retry gave up too early on a slow emulator. Grid, details, search, error and home use it.
+- Verified: first card focused, Down to the next rows, Left opens the sidebar, Films page, Right closes it,
+  opening a film and Back brings the focus back to the same card with the sidebar closed, opening playback
+  from a "Continuer à regarder" card, `tools/smoke.sh home`.

@@ -64,6 +64,7 @@ import dev.codexsoft.codexcine.ui.compose.components.CardRow
 import dev.codexsoft.codexcine.ui.compose.components.MediaCard
 import dev.codexsoft.codexcine.ui.compose.components.ScreenBackground
 import dev.codexsoft.codexcine.ui.compose.components.dpadClickable
+import dev.codexsoft.codexcine.ui.compose.components.requestFocusWhenReady
 import dev.codexsoft.codexcine.ui.compose.theme.CodexTheme
 import java.util.Locale
 
@@ -102,7 +103,7 @@ class ComposeSearchFragment : ComposeScreenFragment() {
             }
         }
         val field = remember { FocusRequester() }
-        LaunchedEffect(Unit) { runCatching { field.requestFocus() } }
+        LaunchedEffect(Unit) { field.requestFocusWhenReady() }
 
         ScreenBackground {
             Column(

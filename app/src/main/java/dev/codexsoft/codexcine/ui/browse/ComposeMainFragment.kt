@@ -3,6 +3,7 @@ package dev.codexsoft.codexcine.ui.browse
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -12,6 +13,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +24,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -38,6 +45,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.key.Key
@@ -55,12 +63,29 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import dev.codexsoft.codexcine.R
+import dev.codexsoft.codexcine.data.progress.WatchProgress
+import dev.codexsoft.codexcine.domain.model.CategoryType
+import dev.codexsoft.codexcine.domain.model.HomeRow
+import dev.codexsoft.codexcine.domain.model.MediaItem
+import dev.codexsoft.codexcine.domain.model.NewEpisode
+import dev.codexsoft.codexcine.ui.common.openMediaItem
 import dev.codexsoft.codexcine.ui.common.showErrorScreen
+import dev.codexsoft.codexcine.ui.common.titleRes
+import dev.codexsoft.codexcine.ui.compose.components.CardRow
+import dev.codexsoft.codexcine.ui.compose.components.ContinueWatchingCard
+import dev.codexsoft.codexcine.ui.compose.components.LocalLeftEdge
+import dev.codexsoft.codexcine.ui.compose.components.MediaCard
+import dev.codexsoft.codexcine.ui.compose.components.MoreCard
+import dev.codexsoft.codexcine.ui.compose.components.NewEpisodeCard
+import dev.codexsoft.codexcine.ui.compose.components.requestFocusWhenReady
 import dev.codexsoft.codexcine.ui.compose.ComposeScreenFragment
 import dev.codexsoft.codexcine.ui.compose.components.LoadingIndicator
 import dev.codexsoft.codexcine.ui.compose.components.dpadClickable
 import dev.codexsoft.codexcine.ui.compose.theme.CodexTheme
 import dev.codexsoft.codexcine.ui.search.SearchActivity
+
+/** False while the sidebar is open: a page must not take the focus from it. */
+private val LocalPageFocusEnabled = androidx.compose.runtime.compositionLocalOf { true }
 
 private val SidebarWidth = 292.dp
 private val SidebarPadding = 56.dp
@@ -101,19 +126,97 @@ class ComposeMainFragment : ComposeScreenFragment() {
                 MainUiState.Loading -> LoadingIndicator(Modifier.align(Alignment.Center))
                 is MainUiState.Content -> HomeShell(
                     openSearch = { startActivity(Intent(requireContext(), SearchActivity::class.java)) },
-                ) { page -> HomePageContent(page) }
+                ) { page, onAtTop -> HomePageContent(page, onAtTop) }
                 is MainUiState.Error -> Unit
             }
         }
     }
 
-    /** What a page shows. The rows come with the next stories. */
+    /**
+     * What a page shows: its rows, in the order of [HomePage.categories]. Rows and cards are keyed, so that a row
+     * arriving late (the catalogue loads row by row), a title leaving "Ma liste" or a card removed from
+     * "Continuer à regarder" never moves the focus.
+     */
     @Composable
-    private fun HomePageContent(page: HomePage) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(page.titleRes), style = MaterialTheme.typography.displayLarge, color = CodexTheme.colors.ivory)
+    private fun HomePageContent(page: HomePage, onAtTop: (Boolean) -> Unit) {
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
+        val allRows = (state as? MainUiState.Content)?.rows.orEmpty()
+        val byCategory = allRows.associateBy { it.category }
+        val rows = page.categories.mapNotNull { byCategory[it] }
+        val listState = rememberLazyListState()
+        val atTop by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 } }
+        LaunchedEffect(atTop) { onAtTop(atTop) }
+
+        // Leanback selects the first card by itself; here the page asks once, as soon as it has one.
+        val firstFocus = remember(page) { FocusRequester() }
+        val focusEnabled = LocalPageFocusEnabled.current
+        var focused by remember(page) { mutableStateOf(false) }
+        LaunchedEffect(rows.isNotEmpty(), focused, focusEnabled) {
+            if (rows.isEmpty() || focused || !focusEnabled) return@LaunchedEffect
+            if (firstFocus.requestFocusWhenReady()) focused = true
+        }
+
+        if (rows.isEmpty()) {
+            page.emptyMessageRes?.let { message ->
+                Text(
+                    text = stringResource(message),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = CodexTheme.colors.ivory,
+                    modifier = Modifier.padding(start = CodexTheme.dimens.heroPaddingStart, end = 48.dp, top = HomeRowsTop),
+                )
+            }
+            return
+        }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize().focusRequester(firstFocus).focusRestorer(),
+            contentPadding = PaddingValues(top = if (page.hasBillboard) 0.dp else HomeRowsTop, bottom = 48.dp),
+        ) {
+            items(rows, key = { it.category.ordinal }) { row ->
+                val title = stringResource(row.category.titleRes)
+                val cards = remember(row) { cardsOf(row, title) }
+                CardRow(title = title, items = cards, key = ::cardKey) { card -> HomeCard(card) }
+            }
         }
     }
+
+    @Composable
+    private fun HomeCard(card: Any) {
+        when (card) {
+            is MediaItem -> MediaCard(card, onClick = { openMediaItem(card) })
+            is WatchProgress -> ContinueWatchingCard(
+                card,
+                onClick = { playProgress(card, autoResume = true) },
+                onLongClick = {},
+            )
+            is NewEpisode -> NewEpisodeCard(card, onClick = { openNewEpisode(card) })
+            is ActionCard.SeeAll -> MoreCard(card, onClick = { openSeeAll(card) })
+            ActionCard.About -> MoreCard(ActionCard.About, onClick = { openAbout() })
+        }
+    }
+}
+
+/** Under the search button and the logo, on the pages that have no billboard. */
+private val HomeRowsTop = 132.dp
+
+/** The cards of a row: what is in progress, the new episodes, the titles, then "Voir tout" or "À propos". */
+private fun cardsOf(row: HomeRow, title: String): List<Any> = buildList {
+    addAll(row.continueWatching)
+    addAll(row.newEpisodes)
+    addAll(row.items)
+    when {
+        row.category == CategoryType.ABOUT -> add(ActionCard.About)
+        row.category.isRemote -> add(ActionCard.SeeAll(row.category, title))
+    }
+}
+
+/** A key a Bundle can store: lazy lists save their items' state under it. */
+private fun cardKey(card: Any): String = when (card) {
+    is MediaItem -> "m:${card.mediaType.value}:${card.id}"
+    is WatchProgress -> "w:${card.key}"
+    is NewEpisode -> "n:${card.show.id}:${card.episode.seasonNumber}:${card.episode.episodeNumber}"
+    is ActionCard.SeeAll -> "all"
+    else -> "about"
 }
 
 /**
@@ -121,9 +224,10 @@ class ComposeMainFragment : ComposeScreenFragment() {
  * while the sidebar is closed.
  */
 @Composable
-private fun HomeShell(openSearch: () -> Unit, page: @Composable (HomePage) -> Unit) {
+private fun HomeShell(openSearch: () -> Unit, page: @Composable (HomePage, (Boolean) -> Unit) -> Unit) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
     var sidebarOpen by remember { mutableStateOf(false) }
+    var atTop by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
     val entryFocus = remember { HomePage.entries.map { FocusRequester() } }
     val pageFocus = remember { FocusRequester() }
@@ -149,22 +253,20 @@ private fun HomeShell(openSearch: () -> Unit, page: @Composable (HomePage) -> Un
     }
 
     Box(Modifier.fillMaxSize()) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .focusRequester(pageFocus)
-                .focusGroup()
-                // Left from the leftmost card has nowhere to go: that is the sidebar.
-                .onKeyEvent { event ->
-                    if (!sidebarOpen && event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
-                        if (!focusManager.moveFocus(FocusDirection.Left)) openSidebar()
-                        true
-                    } else {
-                        false
-                    }
-                },
+        CompositionLocalProvider(
+            LocalLeftEdge provides { if (!sidebarOpen) openSidebar() },
+            LocalPageFocusEnabled provides !sidebarOpen,
         ) {
-            androidx.compose.runtime.key(selected) { page(HomePage.entries[selected]) }
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .focusRequester(pageFocus)
+                    // Whenever the focus is in the page, the sidebar is closed.
+                    .onFocusChanged { if (it.hasFocus && sidebarOpen) sidebarOpen = false }
+                    .focusGroup(),
+            ) {
+                androidx.compose.runtime.key(selected) { page(HomePage.entries[selected]) { atTop = it } }
+            }
         }
 
         val offset by animateDpAsState(if (sidebarOpen) 0.dp else -SidebarWidth, tween(220), label = "sidebar")
@@ -178,17 +280,16 @@ private fun HomeShell(openSearch: () -> Unit, page: @Composable (HomePage) -> Un
         )
 
         // Over the sidebar, as in Leanback: the search button stays visible and reachable.
-        TopButtons(onSearch = openSearch, searchEnabled = true)
+        TopButtons(onSearch = openSearch, visible = atTop || sidebarOpen)
     }
 }
 
 /** The search button at the top left and the logo at the top right. */
 @Composable
-private fun TopButtons(onSearch: () -> Unit, searchEnabled: Boolean) {
-    Box(Modifier.fillMaxSize()) {
-        if (searchEnabled) {
-            SearchOrb(onSearch, Modifier.align(Alignment.TopStart).padding(start = SidebarPadding, top = 30.dp))
-        }
+private fun TopButtons(onSearch: () -> Unit, visible: Boolean) {
+    val alpha by animateFloatAsState(if (visible) 1f else 0f, tween(180), label = "topButtons")
+    Box(Modifier.fillMaxSize().alpha(alpha).focusProperties { canFocus = visible }) {
+        SearchOrb(onSearch, Modifier.align(Alignment.TopStart).padding(start = SidebarPadding, top = 30.dp))
         Image(
             painter = painterResource(R.drawable.logo_lockup),
             contentDescription = null,

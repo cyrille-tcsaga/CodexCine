@@ -58,6 +58,7 @@ import dev.codexsoft.codexcine.ui.compose.components.LoadingIndicator
 import dev.codexsoft.codexcine.ui.compose.components.MediaCard
 import dev.codexsoft.codexcine.ui.compose.components.PillButton
 import dev.codexsoft.codexcine.ui.compose.components.SeasonCard
+import dev.codexsoft.codexcine.ui.compose.components.requestFocusWhenReady
 import dev.codexsoft.codexcine.ui.compose.components.runtimeText
 import dev.codexsoft.codexcine.ui.compose.theme.CodexTheme
 import dev.codexsoft.codexcine.ui.person.PersonActivity
@@ -221,12 +222,7 @@ private fun Hero(
     val colors = CodexTheme.colors
     val dimens = CodexTheme.dimens
     val playFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
-        repeat(20) {
-            androidx.compose.runtime.withFrameNanos { }
-            if (runCatching { playFocus.requestFocus() }.getOrDefault(false)) return@LaunchedEffect
-        }
-    }
+    LaunchedEffect(Unit) { playFocus.requestFocusWhenReady() }
     Column(
         modifier = Modifier
             .fillMaxWidth()

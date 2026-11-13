@@ -2,7 +2,6 @@ package dev.codexsoft.codexcine.ui.browse
 
 import dev.codexsoft.codexcine.ui.common.cardRowPresenter
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
@@ -29,8 +28,6 @@ import dev.codexsoft.codexcine.ui.common.loadBackgroundBitmap
 import dev.codexsoft.codexcine.ui.common.openMediaItem
 import dev.codexsoft.codexcine.ui.common.titleRes
 import dev.codexsoft.codexcine.ui.details.DetailsActivity
-import dev.codexsoft.codexcine.ui.error.AboutActivity
-import dev.codexsoft.codexcine.ui.grid.GridActivity
 import dev.codexsoft.codexcine.ui.playback.PlaybackActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -76,10 +73,8 @@ class HomePageFragment : RowsSupportFragment() {
                 is MediaItem -> openMediaItem(item)
                 is WatchProgress -> resume(item)
                 is NewEpisode -> openNewEpisode(item)
-                is ActionCard.SeeAll -> startActivity(
-                    GridActivity.newIntent(requireContext(), item.category, item.categoryTitle),
-                )
-                ActionCard.About -> startActivity(Intent(requireContext(), AboutActivity::class.java))
+                is ActionCard.SeeAll -> openSeeAll(item)
+                ActionCard.About -> openAbout()
             }
         }
         onItemViewSelectedListener = OnItemViewSelectedListener { _, item, _, row ->
@@ -252,40 +247,8 @@ class HomePageFragment : RowsSupportFragment() {
 
     private fun resume(progress: WatchProgress) = play(progress, autoResume = true)
 
-    private fun play(progress: WatchProgress, autoResume: Boolean, startOver: Boolean = false) {
-        val type = progress.type ?: return
-        startActivity(
-            PlaybackActivity.newIntent(
-                requireContext(),
-                mediaId = progress.tmdbId,
-                mediaType = type,
-                title = progress.title,
-                seasonNumber = progress.season.takeIf { type == MediaType.TV },
-                episodeNumber = progress.episode.takeIf { type == MediaType.TV },
-                autoResume = autoResume,
-                startOver = startOver,
-            ),
-        )
-    }
-
-    /** A show already started plays the new episode; otherwise its page opens, to start from the beginning. */
-    private fun openNewEpisode(item: NewEpisode) {
-        val show = item.show
-        if (!item.isShowStarted) {
-            startActivity(DetailsActivity.newIntent(requireContext(), show.id, show.mediaType, show.title))
-            return
-        }
-        startActivity(
-            PlaybackActivity.newIntent(
-                requireContext(),
-                mediaId = show.id,
-                mediaType = MediaType.TV,
-                title = show.title,
-                seasonNumber = item.episode.seasonNumber,
-                episodeNumber = item.episode.episodeNumber,
-            ),
-        )
-    }
+    private fun play(progress: WatchProgress, autoResume: Boolean, startOver: Boolean = false) =
+        playProgress(progress, autoResume, startOver)
 
     /** Waits for the selection to settle, so scrolling through a row does not load every backdrop. */
     private fun updateBackground(url: String?) {

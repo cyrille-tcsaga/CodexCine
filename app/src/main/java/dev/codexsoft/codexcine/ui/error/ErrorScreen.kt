@@ -33,6 +33,7 @@ import dev.codexsoft.codexcine.ui.compose.ComposeFlags
 import dev.codexsoft.codexcine.ui.compose.ComposeScreen
 import dev.codexsoft.codexcine.ui.compose.ComposeScreenFragment
 import dev.codexsoft.codexcine.ui.compose.components.PillButton
+import dev.codexsoft.codexcine.ui.compose.components.requestFocusWhenReady
 import dev.codexsoft.codexcine.ui.compose.theme.CodexTheme
 
 /**
@@ -96,7 +97,7 @@ fun ErrorScreen(
     onButton: () -> Unit,
 ) {
     val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focus.requestFocus() }
+    LaunchedEffect(Unit) { focus.requestFocusWhenReady() }
     Box(Modifier.fillMaxSize().background(CodexTheme.colors.night)) {
         Text(
             text = title,

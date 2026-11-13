@@ -497,3 +497,21 @@ with Leanback kept until the new screen passes its checklist.
   - After 8 Down and 10 Right key presses on the home: 266 frames, 17 janky (6.39 %), 50th percentile
     18 ms, 90th 29 ms, 95th 32 ms.
   - Memory right after that: PSS 131 962 kB.
+
+### US-04: shared Compose components
+
+- `ui/compose/components`: `CodexCard` (image, ring and 1.06 zoom on selection, title, details), `CardRow`
+  (keyed `LazyRow` with `focusRestorer`), the overlays (`ProgressBarOverlay`, `NewTagOverlay`,
+  `WatchedOverlay`) and one composable per Leanback presenter (`MediaCard`, `ContinueWatchingCard`,
+  `NewEpisodeCard`, `MoreCard`, `CastCard`, `SeasonCard`, `EpisodeCard`), with the same sizes.
+- **Images: Glide, through a plain `CustomTarget`.** The app already tunes Glide (exact size, `centerCrop`,
+  RGB_565) and shares its cache with the Leanback screens during the migration. Coil would add a second
+  cache and a new dependency; Glide's own Compose artifact is still beta (`1.0.0-beta10`). The target is
+  cleared when the card leaves the composition, which is when its bitmap goes back to Glide's pool.
+- **Long press on OK:** `Modifier.dpadClickable` with `DpadPressTracker`, a plain class unit-tested on the JVM.
+  The long press fires at the first key auto-repeat; the release after it is not a click; a release with no
+  press seen first (focus arrived while the key was down) is ignored.
+- **Deviation from the story:** no Compose UI test (`createComposeRule`), because the project has no
+  `androidTest` or Robolectric setup. The press logic is covered by `DpadPressTrackerTest`, and the debug
+  gallery (`ComposeGalleryActivity`) was driven on the emulator with `input keyevent --longpress`: a click
+  prints "clic", a held OK prints "LONG" and no click follows.

@@ -464,3 +464,17 @@ These warnings remain, and are accepted:
 - `allowBackup` stays `true`, as in the template: "Ma liste" is the only user data, and the token
   lives in the
   APK, not in app data.
+
+## Migration to Compose for TV
+
+Plan and stories: `doc/USER_STORIES_MIGRATION_COMPOSE_TV.md`. Screens move one at a time, behind a flag,
+with Leanback kept until the new screen passes its checklist.
+
+### US-01: build setup
+
+- Added the Compose BOM `2026.09.00`, `androidx.tv:tv-material` `1.1.0`, `activity-compose` `1.13.0` and
+  `lifecycle-runtime-compose` `2.11.0`. The Compose compiler plugin follows the Kotlin version (`2.2.10`).
+- Reference measures taken before and after, with no screen migrated yet:
+  - Release APK (R8): 3 937 445 bytes before, 4 041 860 after (+2.6 %).
+  - Cold start on the `Television_1080p` emulator: about 17 s (`am start -W`, software emulator, only
+    useful as a before/after comparison on the same machine).

@@ -6,7 +6,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.leanback.app.SearchSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.HeaderItem
@@ -31,14 +33,7 @@ import dev.codexsoft.codexcine.ui.common.openMediaItem
  */
 class SearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchResultProvider {
 
-    private val viewModel: SearchViewModel by viewModels {
-        viewModelFactory {
-            initializer {
-                val catalog = appContainer.catalogRepository
-                SearchViewModel { query -> catalog.search(query) }
-            }
-        }
-    }
+    private val viewModel: SearchViewModel by viewModels { searchViewModelFactory() }
 
     private val results = ArrayObjectAdapter(cardRowPresenter())
     private val cardPresenter = CardPresenter()
@@ -123,6 +118,18 @@ class SearchFragment : SearchSupportFragment(), SearchSupportFragment.SearchResu
     }
 
     private companion object {
-        val EXTERNAL_SEARCH_ACTIONS = setOf(Intent.ACTION_SEARCH, "com.google.android.gms.actions.SEARCH_ACTION")
+        val EXTERNAL_SEARCH_ACTIONS = SEARCH_ACTIONS
     }
 }
+
+/** The intent actions the system search and the Assistant use to open a search. */
+internal val SEARCH_ACTIONS = setOf(Intent.ACTION_SEARCH, "com.google.android.gms.actions.SEARCH_ACTION")
+
+/** The search view model, for the Leanback and the Compose fragments alike. */
+internal fun Fragment.searchViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val catalog = appContainer.catalogRepository
+        SearchViewModel { query -> catalog.search(query) }
+    }
+}
+

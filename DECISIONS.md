@@ -557,3 +557,19 @@ with Leanback kept until the new screen passes its checklist.
   `gridCategory()` are shared too.
 - Verified with the flag on: menu, a decade filter ("Filtres (1)", "Années 2020"), scrolling past page one
   to load more, and with the flag off: the Leanback menu and `tools/smoke.sh` (both settings).
+
+### US-11: search
+
+- `ComposeSearchFragment` (flag `SEARCH`): a round voice button, a text field, and the results in
+  `CardRow`s (films, shows, people) built from the unchanged `SearchViewModel`. `SearchActivity`, its
+  intent filters and `SearchSuggestionProvider` are untouched; a query from the system search or the
+  Assistant (`SEARCH`, `SEARCH_ACTION`) is cleaned by `SearchSuggestions.cleanQuery` and searched at once.
+- **Voice** goes through `RecognizerIntent.ACTION_RECOGNIZE_SPEECH`, so the app no longer needs its own
+  microphone permission for it (`RECORD_AUDIO` stays in the manifest while the Leanback screen exists).
+  The button is hidden when no recogniser handles the intent. On the emulator two handlers answer, so the
+  system chooser opens; a real TV has one.
+- **Arrow keys.** A Compose text field keeps the arrow keys for its caret and traps the focus. The field
+  hands Left, Up and Down to the focus manager so the voice button and the results stay reachable; Right
+  and the keyboard's own arrow keys still move the caret.
+- Verified: typing a query, results in three rows, an external `SEARCH` intent, Left to the voice button
+  and OK, `tools/smoke.sh search`.

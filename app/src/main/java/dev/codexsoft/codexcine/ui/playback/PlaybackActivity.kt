@@ -47,11 +47,13 @@ class PlaybackActivity : FragmentHostActivity() {
             seasonNumber: Int? = null,
             episodeNumber: Int? = null,
             autoResume: Boolean = false,
+            startOver: Boolean = false,
         ): Intent = Intent(context, PlaybackActivity::class.java)
             .putExtra(Extras.MEDIA_ID, mediaId)
             .putExtra(Extras.MEDIA_TYPE, mediaType.value)
             .putExtra(Extras.TITLE, title)
             .putExtra(Extras.AUTO_RESUME, autoResume)
+            .putExtra(Extras.START_OVER, startOver)
             .apply {
                 seasonNumber?.let { putExtra(Extras.SEASON_NUMBER, it) }
                 episodeNumber?.let { putExtra(Extras.EPISODE_NUMBER, it) }

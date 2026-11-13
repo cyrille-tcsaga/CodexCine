@@ -54,6 +54,7 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
                     request = request,
                     embed = embedFromArguments(),
                     autoResume = activityIntent.getBooleanExtra(Extras.AUTO_RESUME, false),
+                    startOver = activityIntent.getBooleanExtra(Extras.START_OVER, false),
                     resolver = container.streamSourceResolver,
                     progress = container.watchProgressRepository,
                     nextEpisodes = NextEpisodeResolver(TmdbEpisodeCatalog(container.catalogRepository)),

@@ -9,6 +9,7 @@ object Extras {
     const val EPISODE_NUMBER = "extra_episode_number"
     const val CATEGORY = "extra_category"
     const val AUTO_RESUME = "extra_auto_resume"
+    const val START_OVER = "extra_start_over"
 
     // Debug test harness only. PlaybackActivity ignores them in release builds.
     const val DEBUG_EMBED_URL = "extra_debug_embed_url"

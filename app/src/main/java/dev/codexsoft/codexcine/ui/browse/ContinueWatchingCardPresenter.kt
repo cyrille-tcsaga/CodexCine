@@ -11,6 +11,9 @@ import kotlin.math.ceil
 /** A wide still with how far the viewer got, drawn as a thin bar along the bottom of the image. */
 class ContinueWatchingCardPresenter : BaseCardPresenter(widthDp = 264, heightDp = 148) {
 
+    /** A long press on OK, for the menu that can take the title out of the row. */
+    var onLongPress: ((WatchProgress) -> Unit)? = null
+
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any?) {
         val progress = item as? WatchProgress ?: return
         val card = viewHolder.view as ImageCardView
@@ -27,5 +30,14 @@ class ContinueWatchingCardPresenter : BaseCardPresenter(widthDp = 264, heightDp 
         card.contentText = listOfNotNull(episode, timeLeft).joinToString(context.getString(R.string.separator))
         card.loadImage(progress.backdropUrl ?: progress.posterUrl)
         card.setImageOverlay(ProgressBarOverlay(context, progress.fraction))
+        card.setOnLongClickListener {
+            onLongPress?.invoke(progress)
+            true
+        }
+    }
+
+    override fun onUnbindViewHolder(viewHolder: ViewHolder) {
+        viewHolder.view.setOnLongClickListener(null)
+        super.onUnbindViewHolder(viewHolder)
     }
 }

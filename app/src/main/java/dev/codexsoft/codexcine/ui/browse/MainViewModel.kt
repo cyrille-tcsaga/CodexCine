@@ -18,6 +18,7 @@ import dev.codexsoft.codexcine.domain.model.MediaItem
 import dev.codexsoft.codexcine.domain.model.MediaType
 import dev.codexsoft.codexcine.domain.model.NewEpisode
 import dev.codexsoft.codexcine.domain.model.NewEpisodeRules
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -37,12 +38,17 @@ sealed interface MainUiState {
     data class Error(val kind: ErrorKind) : MainUiState
 }
 
+/**
+ * @param persistenceScope where a removal from "Continue watching" is written, so that leaving the
+ *   screen right after choosing does not cancel the write
+ */
 class MainViewModel(
     private val catalog: CatalogRepository,
     private val myList: MyListRepository,
     private val watchProgress: WatchProgressRepository,
     private val watchedEpisodes: WatchedEpisodesRepository,
     private val watchNext: WatchNextPublisher,
+    private val persistenceScope: CoroutineScope,
     private val today: () -> LocalDate = LocalDate::now,
 ) : ViewModel() {
 
@@ -69,6 +75,22 @@ class MainViewModel(
             // The debug harness saves under an id that does not exist on TMDB.
             continueWatching = watchProgress.currentItems().filter { it.tmdbId > 0 }
             publishRows()
+            refreshNewEpisodes()
+        }
+    }
+
+    /**
+     * Takes [item] out of "Continue watching": its saved position is forgotten, so the next play starts
+     * from the beginning. The row updates at once; the removal is stored in the background.
+     * The system "Play next" row follows, since it mirrors the stored progress.
+     */
+    fun removeFromContinueWatching(item: WatchProgress) {
+        continueWatching = continueWatching.filterNot { it.key == item.key }
+        publishRows()
+        val removal = persistenceScope.launch { watchProgress.remove(item.key) }
+        // An episode no longer in progress may now count as a new one.
+        viewModelScope.launch {
+            removal.join()
             refreshNewEpisodes()
         }
     }

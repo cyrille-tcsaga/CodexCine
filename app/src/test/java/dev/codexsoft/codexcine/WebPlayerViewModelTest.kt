@@ -98,6 +98,7 @@ class WebPlayerViewModelTest {
         scope: CoroutineScope,
         request: PlaybackRequest = movie,
         autoResume: Boolean = false,
+        startOver: Boolean = false,
         resolver: StreamSourceResolver = object : StreamSourceResolver {
             override suspend fun resolve(request: PlaybackRequest) =
                 embed.copy(url = "https://vidzy.org/serie/${request.seasonNumber}/${request.episodeNumber}")
@@ -107,6 +108,7 @@ class WebPlayerViewModelTest {
         request = request,
         embed = embed,
         autoResume = autoResume,
+        startOver = startOver,
         resolver = resolver,
         progress = store,
         nextEpisodes = next,
@@ -294,6 +296,17 @@ class WebPlayerViewModelTest {
         runCurrent()
         assertNull(vm.uiState.value.resumePromptSeconds)
         assertTrue(PageCommand(PageCommandName.SEEK_TO, 500.0) in page.sent)
+    }
+
+    @Test
+    fun `starting over neither asks nor seeks, and keeps the saved position until a new save`() = runTest(dispatcher) {
+        store.entries["movie:550:0:0"] = saved(500.0)
+        val vm = viewModel(backgroundScope, startOver = true)
+        vm.onBridgeState(video())
+        runCurrent()
+        assertNull(vm.uiState.value.resumePromptSeconds)
+        assertTrue(page.sent.none { it.name == PageCommandName.SEEK_TO })
+        assertEquals(500.0, store.entries.getValue("movie:550:0:0").positionSeconds, 0.0)
     }
 
     @Test

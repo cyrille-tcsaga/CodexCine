@@ -1,6 +1,7 @@
 package dev.codexsoft.codexcine.ui.browse
 
 import dev.codexsoft.codexcine.ui.common.cardRowPresenter
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -15,6 +16,7 @@ import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.OnItemViewClickedListener
 import androidx.leanback.widget.OnItemViewSelectedListener
 import androidx.lifecycle.lifecycleScope
+import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.data.progress.WatchProgress
 import dev.codexsoft.codexcine.domain.model.CategoryType
 import dev.codexsoft.codexcine.domain.model.HomeRow
@@ -51,9 +53,10 @@ class HomePageFragment : RowsSupportFragment() {
             .addClassPresenter(BillboardRow::class.java, BillboardRowPresenter())
             .addClassPresenter(MessageRow::class.java, MessageRowPresenter()),
     )
+    private val continueWatchingPresenter = ContinueWatchingCardPresenter()
     private val cardSelector = ClassPresenterSelector()
         .addClassPresenter(MediaItem::class.java, CardPresenter())
-        .addClassPresenter(WatchProgress::class.java, ContinueWatchingCardPresenter())
+        .addClassPresenter(WatchProgress::class.java, continueWatchingPresenter)
         .addClassPresenter(NewEpisode::class.java, NewEpisodeCardPresenter())
         .addClassPresenter(ActionCard::class.java, MoreCardPresenter())
 
@@ -62,10 +65,12 @@ class HomePageFragment : RowsSupportFragment() {
     private var isBillboardSelected = true
     private var isDataReadyNotified = false
     private var backgroundJob: Job? = null
+    private var menu: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adapter = rowsAdapter
+        continueWatchingPresenter.onLongPress = ::showContinueWatchingMenu
         onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
             when (item) {
                 is MediaItem -> openMediaItem(item)
@@ -98,7 +103,14 @@ class HomePageFragment : RowsSupportFragment() {
     override fun onDestroyView() {
         backgroundJob?.cancel()
         backgroundJob = null
+        menu?.dismiss()
+        menu = null
         super.onDestroyView()
+    }
+
+    override fun onDestroy() {
+        continueWatchingPresenter.onLongPress = null
+        super.onDestroy()
     }
 
     private fun render(allRows: List<HomeRow>) {
@@ -209,7 +221,38 @@ class HomePageFragment : RowsSupportFragment() {
         }
     }
 
-    private fun resume(progress: WatchProgress) {
+    private enum class ContinueWatchingAction(val labelRes: Int) {
+        RESUME(R.string.continue_menu_resume),
+        RESTART(R.string.continue_menu_restart),
+        REMOVE(R.string.continue_menu_remove),
+    }
+
+    private fun showContinueWatchingMenu(progress: WatchProgress) {
+        if (view == null) return
+        val actions = ContinueWatchingAction.entries
+        val title = if (progress.episode > 0) {
+            getString(R.string.continue_menu_title_episode, progress.title, progress.season, progress.episode)
+        } else {
+            progress.title
+        }
+        menu?.dismiss()
+        menu = AlertDialog.Builder(requireContext(), R.style.CodexCine_Dialog)
+            .setTitle(title)
+            .setItems(actions.map { getString(it.labelRes) }.toTypedArray()) { _, which ->
+                when (actions[which]) {
+                    ContinueWatchingAction.RESUME -> resume(progress)
+                    ContinueWatchingAction.RESTART -> restart(progress)
+                    ContinueWatchingAction.REMOVE -> viewModel.removeFromContinueWatching(progress)
+                }
+            }
+            .show()
+    }
+
+    private fun restart(progress: WatchProgress) = play(progress, autoResume = false, startOver = true)
+
+    private fun resume(progress: WatchProgress) = play(progress, autoResume = true)
+
+    private fun play(progress: WatchProgress, autoResume: Boolean, startOver: Boolean = false) {
         val type = progress.type ?: return
         startActivity(
             PlaybackActivity.newIntent(
@@ -219,7 +262,8 @@ class HomePageFragment : RowsSupportFragment() {
                 title = progress.title,
                 seasonNumber = progress.season.takeIf { type == MediaType.TV },
                 episodeNumber = progress.episode.takeIf { type == MediaType.TV },
-                autoResume = true,
+                autoResume = autoResume,
+                startOver = startOver,
             ),
         )
     }

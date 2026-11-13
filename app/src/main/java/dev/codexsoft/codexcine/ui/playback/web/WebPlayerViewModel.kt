@@ -78,6 +78,8 @@ class WebPlayerViewModel(
     private val loadDetails: suspend (Int, MediaType) -> MediaDetails?,
     private val persistenceScope: CoroutineScope,
     private val clock: () -> Long = System::currentTimeMillis,
+    /** Ignores the saved position, which stays stored until the first new save replaces it. */
+    private val startOver: Boolean = false,
 ) : ViewModel() {
 
     private enum class ResumeCheck { NOT_STARTED, RUNNING, DONE }
@@ -276,6 +278,7 @@ class WebPlayerViewModel(
     private suspend fun checkResume() {
         val request = state.request
         val saved = progress.get(progressKey(request))
+            ?.takeUnless { startOver }
             ?.takeIf { it.positionSeconds >= MIN_RESUME_POSITION_S }
             ?.takeUnless { WatchProgressRules.isFinished(it.positionSeconds, it.durationSeconds) }
         resumeCheck = ResumeCheck.DONE

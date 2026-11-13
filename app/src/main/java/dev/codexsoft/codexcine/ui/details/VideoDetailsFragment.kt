@@ -103,7 +103,8 @@ class VideoDetailsFragment : RowsSupportFragment() {
         super.onViewCreated(view, savedInstanceState)
         // Between the artwork (the window background) and the text: it keeps both readable.
         view.background = ContextCompat.getDrawable(requireContext(), R.drawable.backdrop_scrim)
-        progressBarManager.setRootView(view as ViewGroup)
+        // Not the fragment's own view: that is the rows' RecyclerView, which crashes on a child it did not add.
+        progressBarManager.setRootView(requireActivity().findViewById<ViewGroup>(android.R.id.content))
 
         if (mediaType == null) {
             showErrorScreen(ErrorKind.GENERIC)

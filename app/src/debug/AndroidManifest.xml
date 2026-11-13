@@ -18,5 +18,8 @@
         <receiver
             android:name=".ui.compose.ComposeFlagsReceiver"
             android:exported="true" />
+        <receiver
+            android:name=".ui.compose.SeedProgressReceiver"
+            android:exported="true" />
     </application>
 </manifest>

@@ -1,7 +1,6 @@
 package dev.codexsoft.codexcine.ui.browse
 
 import dev.codexsoft.codexcine.ui.common.cardRowPresenter
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
@@ -62,16 +61,16 @@ class HomePageFragment : RowsSupportFragment() {
     private var isBillboardSelected = true
     private var isDataReadyNotified = false
     private var backgroundJob: Job? = null
-    private var menu: AlertDialog? = null
+    private val continueWatchingMenu = ContinueWatchingMenu(this) { viewModel.removeFromContinueWatching(it) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adapter = rowsAdapter
-        continueWatchingPresenter.onLongPress = ::showContinueWatchingMenu
+        continueWatchingPresenter.onLongPress = continueWatchingMenu::show
         onItemViewClickedListener = OnItemViewClickedListener { _, item, _, _ ->
             when (item) {
                 is MediaItem -> openMediaItem(item)
-                is WatchProgress -> resume(item)
+                is WatchProgress -> playProgress(item, autoResume = true)
                 is NewEpisode -> openNewEpisode(item)
                 is ActionCard.SeeAll -> openSeeAll(item)
                 ActionCard.About -> openAbout()
@@ -98,8 +97,7 @@ class HomePageFragment : RowsSupportFragment() {
     override fun onDestroyView() {
         backgroundJob?.cancel()
         backgroundJob = null
-        menu?.dismiss()
-        menu = null
+        continueWatchingMenu.dismiss()
         super.onDestroyView()
     }
 
@@ -194,40 +192,6 @@ class HomePageFragment : RowsSupportFragment() {
             if (isBillboardSelected) updateBackground(item.backdropUrl)
         }
     }
-
-    private enum class ContinueWatchingAction(val labelRes: Int) {
-        RESUME(R.string.continue_menu_resume),
-        RESTART(R.string.continue_menu_restart),
-        REMOVE(R.string.continue_menu_remove),
-    }
-
-    private fun showContinueWatchingMenu(progress: WatchProgress) {
-        if (view == null) return
-        val actions = ContinueWatchingAction.entries
-        val title = if (progress.episode > 0) {
-            getString(R.string.continue_menu_title_episode, progress.title, progress.season, progress.episode)
-        } else {
-            progress.title
-        }
-        menu?.dismiss()
-        menu = AlertDialog.Builder(requireContext(), R.style.CodexCine_Dialog)
-            .setTitle(title)
-            .setItems(actions.map { getString(it.labelRes) }.toTypedArray()) { _, which ->
-                when (actions[which]) {
-                    ContinueWatchingAction.RESUME -> resume(progress)
-                    ContinueWatchingAction.RESTART -> restart(progress)
-                    ContinueWatchingAction.REMOVE -> viewModel.removeFromContinueWatching(progress)
-                }
-            }
-            .show()
-    }
-
-    private fun restart(progress: WatchProgress) = play(progress, autoResume = false, startOver = true)
-
-    private fun resume(progress: WatchProgress) = play(progress, autoResume = true)
-
-    private fun play(progress: WatchProgress, autoResume: Boolean, startOver: Boolean = false) =
-        playProgress(progress, autoResume, startOver)
 
     /** Waits for the selection to settle, so scrolling through a row does not load every backdrop. */
     private fun updateBackground(url: String?) {

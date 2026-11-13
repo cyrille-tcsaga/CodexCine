@@ -638,3 +638,34 @@ with Leanback kept until the new screen passes its checklist.
   details screen.
 - Verified: the billboard opens the page, its backdrop follows the title, moving to a card changes the
   backdrop to that card's, going back up shows the billboard's current title, `tools/smoke.sh home`.
+
+### US-16: long-press menu on "Continuer à regarder" (HOME flag)
+
+- `ContinueWatchingMenu` holds the three actions (resume, start over, remove) for both homes. The Leanback
+  home and the Compose home only provide how to remove a title (`MainViewModel.removeFromContinueWatching`).
+- **Focus after a removal.** The card that had the focus is removed from the row, so the focus has to be
+  given to its neighbour. `CardRow` takes a `refocusIndex` and the row's size before the removal, waits for
+  the row to be smaller (3 s at most), then focuses the card now at that index (or the last one). Two traps
+  found on the emulator:
+  1. A wrapper that appears or disappears around a card recreates the card and drops its focus, so every
+     card now has the same `Box` and only its modifiers change.
+  2. `focusRequester` needs a focus target after it in the chain: the wrapper is a `focusGroup()`.
+- `SeedProgressReceiver` (debug only) adds a "Continuer à regarder" entry from adb, to test without playing.
+- Verified on the emulator, both homes: long press opens the menu with the title and the episode, "Retirer"
+  takes the card out and the focus lands on the next card.
+
+### Home performance, Compose against Leanback (Television_1080p, 3 GB, 4 cores, software rendering)
+
+The reference measures of US-03 were taken on an emulator that later became overloaded (load 10, 250 MB
+free); every comparison below was redone on the same freshly booted emulator.
+
+| 8 Down and 10 Right | Leanback | Compose |
+|---|---|---|
+| Cold start (`am start -W`) | 2 029 ms | 2 500 ms |
+| Frames rendered | 334 | 237 |
+| Janky frames | 5.99 % | 12.24 % |
+| 50th / 90th / 95th percentile | 18 / 26 / 32 ms | 25 / 34 / 48 ms |
+| Memory (PSS) | 145 MB | 121 MB |
+
+Compose is about 7 ms slower per frame and starts 0.5 s later on this emulator, and uses less memory. A
+real box has a GPU, which should narrow the gap, but this has to be checked on one before the release (US-20).

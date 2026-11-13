@@ -101,6 +101,20 @@ class ComposeMainFragment : ComposeScreenFragment() {
 
     private val viewModel: MainViewModel by viewModels { mainViewModelFactory() }
 
+    /** Where a card was long-pressed, and where the focus must go once it has been removed. */
+    private var lastLongPress: RowPosition? = null
+    private var refocus by mutableStateOf<RowPosition?>(null)
+
+    private val continueWatchingMenu = ContinueWatchingMenu(this) {
+        refocus = lastLongPress
+        viewModel.removeFromContinueWatching(it)
+    }
+
+    override fun onDestroyView() {
+        continueWatchingMenu.dismiss()
+        super.onDestroyView()
+    }
+
     override fun onResume() {
         super.onResume()
         viewModel.refreshLocalRows()
@@ -213,7 +227,15 @@ class ComposeMainFragment : ComposeScreenFragment() {
             items(rows, key = { it.category.ordinal }) { row ->
                 val title = stringResource(row.category.titleRes)
                 val cards = remember(row) { cardsOf(row, title) }
-                CardRow(title = title, items = cards, key = ::cardKey) { card ->
+                val position = refocus?.takeIf { it.row == row.category.ordinal }
+                CardRow(
+                    title = title,
+                    items = cards,
+                    key = ::cardKey,
+                    refocusIndex = position?.index,
+                    refocusFromSize = position?.size ?: 0,
+                    onRefocused = { refocus = null },
+                ) { card ->
                     Box(
                         Modifier.onFocusChanged {
                             if (it.hasFocus) {
@@ -221,20 +243,23 @@ class ComposeMainFragment : ComposeScreenFragment() {
                                 backdropOf(card)?.let(setBackdrop)
                             }
                         },
-                    ) { HomeCard(card) }
+                    ) { HomeCard(card, onLongPress = { lastLongPress = RowPosition(row.category.ordinal, cards.indexOf(card), cards.size) }) }
                 }
             }
         }
     }
 
     @Composable
-    private fun HomeCard(card: Any) {
+    private fun HomeCard(card: Any, onLongPress: () -> Unit) {
         when (card) {
             is MediaItem -> MediaCard(card, onClick = { openMediaItem(card) })
             is WatchProgress -> ContinueWatchingCard(
                 card,
                 onClick = { playProgress(card, autoResume = true) },
-                onLongClick = {},
+                onLongClick = {
+                    onLongPress()
+                    continueWatchingMenu.show(card)
+                },
             )
             is NewEpisode -> NewEpisodeCard(card, onClick = { openNewEpisode(card) })
             is ActionCard.SeeAll -> MoreCard(card, onClick = { openSeeAll(card) })
@@ -266,6 +291,9 @@ private fun backdropOf(card: Any): String? = when (card) {
 }
 
 private const val BILLBOARD_SIZE = 6
+
+/** A card's place on the page: its row (the category's ordinal), its position in it and the row's size. */
+private data class RowPosition(val row: Int, val index: Int, val size: Int)
 
 /** The billboard leaves just the next row's title showing at the bottom, as a hint to scroll. */
 private const val BILLBOARD_HEIGHT_FRACTION = 0.95f

@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.Fragment
 import dev.codexsoft.codexcine.ui.common.FragmentHostActivity
+import dev.codexsoft.codexcine.ui.compose.ComposeFlags
+import dev.codexsoft.codexcine.ui.compose.ComposeScreen
 import dev.codexsoft.codexcine.ui.update.UpdatePrompt
 
 class MainActivity : FragmentHostActivity() {
@@ -18,7 +20,8 @@ class MainActivity : FragmentHostActivity() {
         window.decorView.postDelayed(::onHomeReady, SPLASH_MAX_MS)
     }
 
-    override fun createContentFragment(): Fragment = MainFragment()
+    override fun createContentFragment(): Fragment =
+        if (ComposeFlags.isEnabled(this, ComposeScreen.HOME)) ComposeMainFragment() else MainFragment()
 
     fun onHomeReady() {
         if (isHomeReady) return

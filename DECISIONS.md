@@ -589,3 +589,17 @@ with Leanback kept until the new screen passes its checklist.
   its leading edge goes to the pivot. Every Compose screen gets it.
 - Verified: film, saga film (row under the hero, "film 2 sur 3"), show (seasons row), My List toggle,
   moving between buttons without scrolling, Down to the cast row, `tools/smoke.sh all`.
+
+### US-13: home shell (HOME flag, unfinished until US-16)
+
+- `ComposeMainFragment` (flag `HOME`): loading spinner, error screen, then `HomeShell`: the sidebar, the
+  search button and the logo, around the selected page. It shares `MainViewModel` and `mainViewModelFactory()`
+  with the Leanback home and keeps `MainActivity.onHomeReady()`, so the splash screen and the update offer
+  behave as before.
+- **Sidebar.** An overlay of 292 dp on the `fastlane_background` colour, hidden while a page is browsed. Back
+  opens it (a second Back leaves the app, as in Leanback), the entry under the focus is the page shown,
+  Right or OK closes it and gives the focus back to the page. While it is closed its entries cannot take the
+  focus, so it never catches a key meant for the cards. The search button is drawn over it.
+- The pages still show only their name: rows come with US-14, the billboard and the background with US-15,
+  the long-press menu with US-16. **Do not enable `HOME` before US-16.**
+- Verified on the emulator: Back opens the sidebar on the first entry, Down shows Films, Right closes it.

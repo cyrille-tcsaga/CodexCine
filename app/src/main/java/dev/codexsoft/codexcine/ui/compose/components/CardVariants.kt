@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.codexsoft.codexcine.R
@@ -21,7 +21,6 @@ import dev.codexsoft.codexcine.domain.model.NewEpisode
 import dev.codexsoft.codexcine.domain.model.Season
 import dev.codexsoft.codexcine.ui.browse.ActionCard
 import dev.codexsoft.codexcine.ui.common.meaningfulName
-import dev.codexsoft.codexcine.ui.common.runtimeText
 import dev.codexsoft.codexcine.ui.compose.theme.CodexTheme
 import dev.codexsoft.codexcine.ui.season.EpisodeItem
 import kotlin.math.ceil
@@ -39,6 +38,17 @@ object CardSizes {
 
 @Composable
 private fun separator() = stringResource(R.string.separator)
+
+/** `Context.runtimeText` for Compose: the patterns come from `stringResource`, which follows the configuration. */
+@Composable
+private fun runtimeText(minutes: Int?): String? = Formatters.runtime(
+    minutes,
+    Formatters.RuntimePatterns(
+        hoursAndMinutes = stringResource(R.string.runtime_hours_minutes),
+        hoursOnly = stringResource(R.string.runtime_hours),
+        minutesOnly = stringResource(R.string.runtime_minutes),
+    ),
+)
 
 /** Portrait poster for a film, a show or a person (`CardPresenter`). */
 @Composable
@@ -63,9 +73,8 @@ fun ContinueWatchingCard(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     val minutesLeft = ceil((progress.durationSeconds - progress.positionSeconds) / 60).toInt()
-    val timeLeft = context.runtimeText(minutesLeft)?.let { context.getString(R.string.card_time_left, it) }
+    val timeLeft = runtimeText(minutesLeft)?.let { stringResource(R.string.card_time_left, it) }
     val episode = if (progress.episode > 0) {
         stringResource(R.string.playback_episode_subtitle, progress.season, progress.episode)
     } else {
@@ -150,10 +159,9 @@ fun CastCard(member: CastMember, onClick: () -> Unit, modifier: Modifier = Modif
 /** A season of a show (`SeasonCardPresenter`). */
 @Composable
 fun SeasonCard(season: Season, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     CodexCard(
-        title = season.name ?: context.getString(R.string.season_number, season.seasonNumber),
-        subtitle = context.resources.getQuantityString(R.plurals.episode_count, season.episodeCount, season.episodeCount),
+        title = season.name ?: stringResource(R.string.season_number, season.seasonNumber),
+        subtitle = pluralStringResource(R.plurals.episode_count, season.episodeCount, season.episodeCount),
         width = CardSizes.SEASON_W,
         height = CardSizes.SEASON_H,
         onClick = onClick,
@@ -169,19 +177,19 @@ fun EpisodeCard(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     val episode = item.episode
     val name = episode.meaningfulName()
     val title = if (name == null) {
-        context.getString(R.string.episode_title_untitled, episode.episodeNumber)
+        stringResource(R.string.episode_title_untitled, episode.episodeNumber)
     } else {
-        context.getString(R.string.episode_title, episode.episodeNumber, name)
+        stringResource(R.string.episode_title, episode.episodeNumber, name)
     }
+    val watched = stringResource(R.string.episode_watched)
     val subtitle = listOfNotNull(
-        context.getString(R.string.episode_watched).takeIf { item.isWatched },
+        watched.takeIf { item.isWatched },
         Formatters.date(episode.airDate),
-        context.runtimeText(episode.runtimeMinutes),
-    ).joinToString(context.getString(R.string.separator))
+        runtimeText(episode.runtimeMinutes),
+    ).joinToString(separator())
     CodexCard(
         title = title,
         subtitle = subtitle,

@@ -50,6 +50,7 @@ import dev.codexsoft.codexcine.domain.model.Season
 import dev.codexsoft.codexcine.ui.common.openMediaItem
 import dev.codexsoft.codexcine.ui.common.showErrorScreen
 import dev.codexsoft.codexcine.ui.compose.ComposeScreenFragment
+import dev.codexsoft.codexcine.ui.compose.components.BackdropScrim
 import dev.codexsoft.codexcine.ui.compose.components.CardImage
 import dev.codexsoft.codexcine.ui.compose.components.CardRow
 import dev.codexsoft.codexcine.ui.compose.components.CardSizes
@@ -190,21 +191,7 @@ private fun DetailsBackground(backdropUrl: String?) {
             errorIcon = null,
             placeholder = colors.night,
         )
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.horizontalGradient(listOf(colors.scrimStrong, colors.scrimSoft, androidx.compose.ui.graphics.Color.Transparent)),
-            ),
-        )
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, colors.scrimSoft, colors.night)),
-            ),
-        )
-        Box(
-            Modifier.fillMaxWidth().height(160.dp).background(
-                Brush.verticalGradient(listOf(colors.scrimSoft, androidx.compose.ui.graphics.Color.Transparent)),
-            ),
-        )
+        BackdropScrim()
     }
 }
 

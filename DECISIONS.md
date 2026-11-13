@@ -624,3 +624,17 @@ with Leanback kept until the new screen passes its checklist.
 - Verified: first card focused, Down to the next rows, Left opens the sidebar, Films page, Right closes it,
   opening a film and Back brings the focus back to the same card with the sidebar closed, opening playback
   from a "Continuer à regarder" card, `tools/smoke.sh home`.
+
+### US-15: billboard and dynamic backdrop (HOME flag, still unfinished until US-16)
+
+- `Billboard` (ui/browse): label, title, year and rating, overview, "Lecture" and "Plus d'infos", the dots,
+  and a rotation every 8 s that pauses while the focus is inside it. The text fades in at each change
+  (fade-in only: an interrupted fade-in still ends visible). The six titles are picked once, from the first
+  row that can feed them, and kept: rows arriving later never change them. Play and "Plus d'infos" use the
+  same `playFeatured` and `openDetails` as the Leanback billboard (a show starts where the viewer left off).
+- `HomeBackdrop` replaces `BackgroundManager`: the artwork of the featured title or of the focused card,
+  cross-faded under `BackdropScrim`, loaded through the same `loadBackgroundBitmap`, 300 ms after the
+  selection settles, keeping the previous image until the next one is ready. The scrim is shared with the
+  details screen.
+- Verified: the billboard opens the page, its backdrop follows the title, moving to a card changes the
+  backdrop to that card's, going back up shows the billboard's current title, `tools/smoke.sh home`.

@@ -121,12 +121,18 @@ class ComposeMainFragment : ComposeScreenFragment() {
             }
         }
 
+        var backdrop by remember { mutableStateOf<String?>(null) }
         Box(Modifier.fillMaxSize().background(CodexTheme.colors.night)) {
+            HomeBackdrop(requestedUrl = backdrop)
             when (state) {
                 MainUiState.Loading -> LoadingIndicator(Modifier.align(Alignment.Center))
-                is MainUiState.Content -> HomeShell(
-                    openSearch = { startActivity(Intent(requireContext(), SearchActivity::class.java)) },
-                ) { page, onAtTop -> HomePageContent(page, onAtTop) }
+                is MainUiState.Content -> androidx.compose.runtime.CompositionLocalProvider(
+                    LocalBackdrop provides { url -> if (url != null) backdrop = url },
+                ) {
+                    HomeShell(
+                        openSearch = { startActivity(Intent(requireContext(), SearchActivity::class.java)) },
+                    ) { page, onAtTop -> HomePageContent(page, onAtTop) }
+                }
                 is MainUiState.Error -> Unit
             }
         }
@@ -156,7 +162,21 @@ class ComposeMainFragment : ComposeScreenFragment() {
             if (firstFocus.requestFocusWhenReady()) focused = true
         }
 
-        if (rows.isEmpty()) {
+        // Picked once, from the first row that can feed it, and kept: rows arriving later never change it.
+        var billboardItems by remember(page) { mutableStateOf<List<MediaItem>?>(null) }
+        if (page.hasBillboard && billboardItems == null) {
+            val source = byCategory[CategoryType.TRENDING]
+                ?: byCategory[CategoryType.POPULAR_MOVIES]
+                ?: allRows.firstOrNull { it.category.isRemote }
+            val picked = source?.items.orEmpty()
+                .filter { it.backdropUrl != null && !it.overview.isNullOrBlank() }
+                .take(BILLBOARD_SIZE)
+            if (picked.isNotEmpty()) billboardItems = picked
+        }
+        val setBackdrop = LocalBackdrop.current
+        var billboardSelected by remember(page) { mutableStateOf(true) }
+
+        if (rows.isEmpty() && billboardItems == null) {
             page.emptyMessageRes?.let { message ->
                 Text(
                     text = stringResource(message),
@@ -172,10 +192,37 @@ class ComposeMainFragment : ComposeScreenFragment() {
             modifier = Modifier.fillMaxSize().focusRequester(firstFocus).focusRestorer(),
             contentPadding = PaddingValues(top = if (page.hasBillboard) 0.dp else HomeRowsTop, bottom = 48.dp),
         ) {
+            billboardItems?.let { featured ->
+                item(key = "billboard") {
+                    Billboard(
+                        items = featured,
+                        onPlay = ::playFeatured,
+                        onMoreInfo = ::openDetails,
+                        onFeatured = { item -> if (billboardSelected) setBackdrop(item.backdropUrl) },
+                        modifier = Modifier
+                            .fillParentMaxHeight(BILLBOARD_HEIGHT_FRACTION)
+                            .onFocusChanged {
+                                if (it.hasFocus) {
+                                    billboardSelected = true
+                                    setBackdrop(featured.first().backdropUrl)
+                                }
+                            },
+                    )
+                }
+            }
             items(rows, key = { it.category.ordinal }) { row ->
                 val title = stringResource(row.category.titleRes)
                 val cards = remember(row) { cardsOf(row, title) }
-                CardRow(title = title, items = cards, key = ::cardKey) { card -> HomeCard(card) }
+                CardRow(title = title, items = cards, key = ::cardKey) { card ->
+                    Box(
+                        Modifier.onFocusChanged {
+                            if (it.hasFocus) {
+                                billboardSelected = false
+                                backdropOf(card)?.let(setBackdrop)
+                            }
+                        },
+                    ) { HomeCard(card) }
+                }
             }
         }
     }
@@ -211,6 +258,18 @@ private fun cardsOf(row: HomeRow, title: String): List<Any> = buildList {
 }
 
 /** A key a Bundle can store: lazy lists save their items' state under it. */
+private fun backdropOf(card: Any): String? = when (card) {
+    is MediaItem -> card.backdropUrl
+    is WatchProgress -> card.backdropUrl
+    is NewEpisode -> card.show.backdropUrl
+    else -> null
+}
+
+private const val BILLBOARD_SIZE = 6
+
+/** The billboard leaves just the next row's title showing at the bottom, as a hint to scroll. */
+private const val BILLBOARD_HEIGHT_FRACTION = 0.95f
+
 private fun cardKey(card: Any): String = when (card) {
     is MediaItem -> "m:${card.mediaType.value}:${card.id}"
     is WatchProgress -> "w:${card.key}"

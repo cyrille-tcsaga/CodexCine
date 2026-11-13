@@ -185,30 +185,9 @@ class HomePageFragment : RowsSupportFragment() {
     }
 
     private val billboardListener = object : BillboardRow.Listener {
-        override fun onPlay(item: MediaItem) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                // A show starts where the viewer left off, like the details screen's Play.
-                val episode = if (item.mediaType == MediaType.TV) {
-                    appContainer.watchProgressRepository.latestEpisode(item.id)
-                } else {
-                    null
-                }
-                startActivity(
-                    PlaybackActivity.newIntent(
-                        requireContext(),
-                        mediaId = item.id,
-                        mediaType = item.mediaType,
-                        title = item.title,
-                        seasonNumber = if (item.mediaType == MediaType.TV) episode?.season ?: 1 else null,
-                        episodeNumber = if (item.mediaType == MediaType.TV) episode?.episode ?: 1 else null,
-                    ),
-                )
-            }
-        }
+        override fun onPlay(item: MediaItem) = playFeatured(item)
 
-        override fun onMoreInfo(item: MediaItem) {
-            startActivity(DetailsActivity.newIntent(requireContext(), item.id, item.mediaType, item.title))
-        }
+        override fun onMoreInfo(item: MediaItem) = openDetails(item)
 
         override fun onFeatured(item: MediaItem) {
             featured = item

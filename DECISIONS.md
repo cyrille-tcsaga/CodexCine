@@ -525,3 +525,21 @@ with Leanback kept until the new screen passes its checklist.
   that is not retryable closes the activity.
 - `PillButton` (ui/compose/components) is the shared rounded button; the error screen's button takes the
   focus when the screen opens.
+
+### US-07 and US-08: person and season screens
+
+- `ComposePersonFragment` and `ComposeSeasonFragment` sit behind the `PERSON` and `SEASON` flags; the
+  activities pick the fragment. The view models are untouched. The season screen keeps the Leanback
+  screen's `AlertDialog` menu (same style, same labels, via the shared `EpisodeAction.labelRes`) and the
+  shared `seasonViewModelFactory()`.
+- New shared pieces: `ScreenFrame` (gradient background, title top right, hint, loading spinner),
+  `CardGrid` (fixed columns, centred like `VerticalGridPresenter`, 8 dp column gap) and `LoadingIndicator`.
+- **Rules learnt on the emulator**
+  - A lazy list key must be storable in a `Bundle` (a String or an Int). A data class as key crashes at
+    the first composition (`EpisodeNumber` did), so the season grid keys on "season:episode".
+  - Leanback selects the first card by itself; in Compose the grid asks for the focus once it has cards.
+    The window may not have the focus yet, so it retries for up to 20 frames.
+  - Leanback cuts a long title ("Saison 1 · Game…"); the Compose screens show the whole title, ellipsised
+    only when it would overlap the left side.
+- Verified: season (long press, menu, "Marquer comme vu", the card dims with a check and the focus stays),
+  person (grid, open a film, back restores the focus), `tools/smoke.sh person,season`.

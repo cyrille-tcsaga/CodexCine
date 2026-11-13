@@ -6,8 +6,10 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.leanback.widget.DiffCallback
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.codexsoft.codexcine.R
@@ -26,21 +28,7 @@ class SeasonFragment : BaseGridFragment(columns = 3, cardPresenter = EpisodeCard
     private val seasonNumber get() = requireActivity().intent.getIntExtra(Extras.SEASON_NUMBER, Extras.NO_VALUE)
     private val showTitle get() = requireActivity().intent.getStringExtra(Extras.TITLE).orEmpty()
 
-    private val viewModel: SeasonViewModel by viewModels {
-        viewModelFactory {
-            initializer {
-                val container = appContainer
-                SeasonViewModel(
-                    showId = showId,
-                    seasonNumber = seasonNumber,
-                    catalog = container.catalogRepository,
-                    watched = container.watchedEpisodesRepository,
-                    progress = container.watchProgressRepository,
-                    persistenceScope = container.persistenceScope,
-                )
-            }
-        }
-    }
+    private val viewModel: SeasonViewModel by viewModels { seasonViewModelFactory() }
 
     private var menu: AlertDialog? = null
 
@@ -132,18 +120,25 @@ class SeasonFragment : BaseGridFragment(columns = 3, cardPresenter = EpisodeCard
         )
     }
 
-    private val EpisodeAction.labelRes: Int
-        get() = when (this) {
-            EpisodeAction.MARK_WATCHED -> R.string.episode_mark_watched
-            EpisodeAction.MARK_UNWATCHED -> R.string.episode_mark_unwatched
-            EpisodeAction.MARK_WATCHED_UP_TO_HERE -> R.string.episode_mark_up_to_here
-            EpisodeAction.MARK_SEASON_WATCHED -> R.string.season_mark_watched
-            EpisodeAction.MARK_SEASON_UNWATCHED -> R.string.season_mark_unwatched
-        }
-
     private object EpisodeItemDiff : DiffCallback<EpisodeItem>() {
         override fun areItemsTheSame(oldItem: EpisodeItem, newItem: EpisodeItem) = oldItem.number == newItem.number
 
         override fun areContentsTheSame(oldItem: EpisodeItem, newItem: EpisodeItem) = oldItem == newItem
+    }
+}
+
+/** The season screen's view model, for the Leanback and the Compose fragments alike. */
+internal fun Fragment.seasonViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val container = appContainer
+        val intent = requireActivity().intent
+        SeasonViewModel(
+            showId = intent.getIntExtra(Extras.MEDIA_ID, Extras.NO_VALUE),
+            seasonNumber = intent.getIntExtra(Extras.SEASON_NUMBER, Extras.NO_VALUE),
+            catalog = container.catalogRepository,
+            watched = container.watchedEpisodesRepository,
+            progress = container.watchProgressRepository,
+            persistenceScope = container.persistenceScope,
+        )
     }
 }

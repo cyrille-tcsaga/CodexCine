@@ -1,5 +1,7 @@
 package dev.codexsoft.codexcine.ui.season
 
+import androidx.annotation.StringRes
+import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.data.progress.EpisodeNumber
 import dev.codexsoft.codexcine.domain.model.Episode
 import java.time.LocalDate
@@ -21,6 +23,17 @@ enum class EpisodeAction(val isWatched: Boolean) {
     MARK_SEASON_WATCHED(true),
     MARK_SEASON_UNWATCHED(false),
 }
+
+/** The menu's labels, shared by the Leanback and the Compose season screens. */
+@get:StringRes
+val EpisodeAction.labelRes: Int
+    get() = when (this) {
+        EpisodeAction.MARK_WATCHED -> R.string.episode_mark_watched
+        EpisodeAction.MARK_UNWATCHED -> R.string.episode_mark_unwatched
+        EpisodeAction.MARK_WATCHED_UP_TO_HERE -> R.string.episode_mark_up_to_here
+        EpisodeAction.MARK_SEASON_WATCHED -> R.string.season_mark_watched
+        EpisodeAction.MARK_SEASON_UNWATCHED -> R.string.season_mark_unwatched
+    }
 
 /** What the long-press menu offers, and which episodes each choice changes. Pure, so that it can be tested. */
 object EpisodeMenu {

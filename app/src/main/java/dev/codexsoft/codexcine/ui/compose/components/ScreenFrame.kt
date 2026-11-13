@@ -27,6 +27,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -55,11 +56,15 @@ fun ScreenFrame(
     modifier: Modifier = Modifier,
     hint: String? = null,
     loading: Boolean = false,
+    titleBar: (@Composable () -> Unit)? = null,
+    contentTop: Dp = ScreenContentTop,
     content: @Composable BoxScope.() -> Unit,
 ) {
     ScreenBackground(modifier) {
-        Box(Modifier.fillMaxSize().padding(top = ScreenContentTop), content = content)
-        Text(
+        Box(Modifier.fillMaxSize().padding(top = contentTop), content = content)
+        if (titleBar != null) {
+            Box(Modifier.align(Alignment.TopStart)) { titleBar() }
+        } else Text(
             text = title,
             style = MaterialTheme.typography.displayLarge.merge(TextStyle(fontSize = 45.sp, textAlign = TextAlign.End)),
             color = CodexTheme.colors.ivory,

@@ -543,3 +543,17 @@ with Leanback kept until the new screen passes its checklist.
     only when it would overlap the left side.
 - Verified: season (long press, menu, "Marquer comme vu", the card dims with a check and the focus stays),
   person (grid, open a film, back restores the focus), `tools/smoke.sh person,season`.
+
+### US-09 and US-10: "Voir tout" grid and its filters
+
+- `ComposeGridFragment` (flag `GRID`) shows five columns of `MediaCard` through `CardGrid`, paged by the
+  unchanged `GridViewModel` (`onSelected` feeds `onItemSelected`). It keeps the states of the Leanback
+  screen: spinner while loading or when the filters change, error screen on failure, "Aucun contenu" when
+  the category is empty, and a toast plus focus on the filters button when the filters leave nothing.
+- The title bar is a `titleBar` slot of `ScreenFrame`: "Filtres" pill (with the count), what is filtered,
+  and the title, as in `view_grid_title`. Going up from the first row reaches the button by itself.
+- The filter menus moved to `GridFilterController`, used by both screens (same `AlertDialog` style, same
+  labels, genres loaded once). `MediaGridFragment` shrank accordingly. `gridViewModelFactory()` and
+  `gridCategory()` are shared too.
+- Verified with the flag on: menu, a decade filter ("Filtres (1)", "Années 2020"), scrolling past page one
+  to load more, and with the flag off: the Leanback menu and `tools/smoke.sh` (both settings).

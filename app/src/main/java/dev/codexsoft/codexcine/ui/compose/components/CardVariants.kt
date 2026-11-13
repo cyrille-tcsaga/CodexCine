@@ -41,7 +41,7 @@ private fun separator() = stringResource(R.string.separator)
 
 /** `Context.runtimeText` for Compose: the patterns come from `stringResource`, which follows the configuration. */
 @Composable
-private fun runtimeText(minutes: Int?): String? = Formatters.runtime(
+internal fun runtimeText(minutes: Int?): String? = Formatters.runtime(
     minutes,
     Formatters.RuntimePatterns(
         hoursAndMinutes = stringResource(R.string.runtime_hours_minutes),

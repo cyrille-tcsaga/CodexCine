@@ -573,3 +573,19 @@ with Leanback kept until the new screen passes its checklist.
   and the keyboard's own arrow keys still move the caret.
 - Verified: typing a query, results in three rows, an external `SEARCH` intent, Left to the voice button
   and OK, `tools/smoke.sh search`.
+
+### US-12: details screen
+
+- `ComposeDetailsFragment` (flag `DETAILS`): the artwork fills the screen under the `backdrop_scrim` layers, a
+  `LazyColumn` holds the hero then the saga, seasons, cast and recommendations rows. The view model is
+  unchanged and shared through `detailsViewModelFactory()`; opening a trailer moved to `openTrailerOf`,
+  used by both screens.
+- The hero is drawn before the network answers (title from the intent, Play usable, Vidzy badges as they
+  come) and Play keeps the focus when the data arrives. The loading spinner sits in the screen's own box,
+  not in the list: a view added to the rows' `RecyclerView` was the cause of the earlier crash (`2153488`).
+- **Focus scrolling.** On a TV, Compose scrolls the focused item to a 30 % pivot at every focus change,
+  even between two fully visible buttons, so the page jumped when moving Left or Right in the hero. The
+  theme now provides `FocusScrollSpec`: nothing moves while the focused item is fully visible; otherwise
+  its leading edge goes to the pivot. Every Compose screen gets it.
+- Verified: film, saga film (row under the hero, "film 2 sur 3"), show (seasons row), My List toggle,
+  moving between buttons without scrolling, Down to the cast row, `tools/smoke.sh all`.

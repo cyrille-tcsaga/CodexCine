@@ -40,7 +40,8 @@ fun CardImage(
     width: Dp,
     height: Dp,
     modifier: Modifier = Modifier,
-    @androidx.annotation.DrawableRes errorIcon: Int = R.drawable.ic_movie,
+    @androidx.annotation.DrawableRes errorIcon: Int? = R.drawable.ic_movie,
+    placeholder: androidx.compose.ui.graphics.Color? = null,
 ) {
     val context = LocalContext.current.applicationContext
     val density = LocalDensity.current
@@ -74,7 +75,7 @@ fun CardImage(
         onDispose { Glide.with(context).clear(target) }
     }
 
-    Box(modifier.background(CodexTheme.colors.card)) {
+    Box(modifier.background(placeholder ?: CodexTheme.colors.card)) {
         val loaded = bitmap
         when {
             loaded != null -> Image(
@@ -83,7 +84,7 @@ fun CardImage(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
             )
-            failed -> Image(
+            failed && errorIcon != null -> Image(
                 painter = painterResource(errorIcon),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp).align(Alignment.Center),

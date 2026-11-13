@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.leanback.app.BackgroundManager
 import androidx.leanback.app.ProgressBarManager
 import androidx.leanback.app.RowsSupportFragment
@@ -54,21 +56,7 @@ class VideoDetailsFragment : RowsSupportFragment() {
     private val mediaType get() = MediaType.fromValue(requireActivity().intent.getStringExtra(Extras.MEDIA_TYPE))
     private val initialTitle get() = requireActivity().intent.getStringExtra(Extras.TITLE).orEmpty()
 
-    private val viewModel: DetailsViewModel by viewModels {
-        viewModelFactory {
-            initializer {
-                val container = appContainer
-                DetailsViewModel(
-                    mediaId = mediaId,
-                    mediaType = mediaType ?: MediaType.MOVIE,
-                    catalog = container.catalogRepository,
-                    myList = container.myListRepository,
-                    vidzy = container.vidzyRepository,
-                    watchProgress = container.watchProgressRepository,
-                )
-            }
-        }
-    }
+    private val viewModel: DetailsViewModel by viewModels { detailsViewModelFactory() }
 
     private val progressBarManager = ProgressBarManager()
     private lateinit var rows: ArrayObjectAdapter
@@ -207,20 +195,7 @@ class VideoDetailsFragment : RowsSupportFragment() {
         }
     }
 
-    private fun openTrailer(key: String) {
-        val inApp = Intent(Intent.ACTION_VIEW, "vnd.youtube:$key".toUri())
-        val inBrowser = Intent(Intent.ACTION_VIEW, "https://www.youtube.com/watch?v=$key".toUri())
-        if (!tryStart(inApp) && !tryStart(inBrowser)) {
-            Toast.makeText(requireContext(), R.string.no_trailer_app, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun tryStart(intent: Intent): Boolean = try {
-        startActivity(intent)
-        true
-    } catch (_: ActivityNotFoundException) {
-        false
-    }
+    private fun openTrailer(key: String) = openTrailerOf(key)
 
     private fun openPerson(member: CastMember) {
         startActivity(PersonActivity.newIntent(requireContext(), member.id, member.name))
@@ -235,3 +210,36 @@ class VideoDetailsFragment : RowsSupportFragment() {
         const val SAGA_ROW_ID = -1L
     }
 }
+
+/** The details screen's view model, for the Leanback and the Compose fragments alike. */
+internal fun Fragment.detailsViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val container = appContainer
+        val intent = requireActivity().intent
+        DetailsViewModel(
+            mediaId = intent.getIntExtra(Extras.MEDIA_ID, Extras.NO_VALUE),
+            mediaType = MediaType.fromValue(intent.getStringExtra(Extras.MEDIA_TYPE)) ?: MediaType.MOVIE,
+            catalog = container.catalogRepository,
+            myList = container.myListRepository,
+            vidzy = container.vidzyRepository,
+            watchProgress = container.watchProgressRepository,
+        )
+    }
+}
+
+/** Opens a trailer in the YouTube app, else in a browser, else says that nothing can play it. */
+internal fun Fragment.openTrailerOf(key: String) {
+    val inApp = Intent(Intent.ACTION_VIEW, "vnd.youtube:$key".toUri())
+    val inBrowser = Intent(Intent.ACTION_VIEW, "https://www.youtube.com/watch?v=$key".toUri())
+    if (!tryStart(inApp) && !tryStart(inBrowser)) {
+        Toast.makeText(requireContext(), R.string.no_trailer_app, Toast.LENGTH_LONG).show()
+    }
+}
+
+private fun Fragment.tryStart(intent: Intent): Boolean = try {
+    startActivity(intent)
+    true
+} catch (_: ActivityNotFoundException) {
+    false
+}
+

@@ -1,5 +1,7 @@
 package dev.codexsoft.codexcine.ui.compose.theme
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -40,7 +42,7 @@ object CodexTheme {
  * The app's theme in Compose. Colours come from `res/values/colors.xml` and fonts from `res/font`, so a
  * change to the brand reaches both the Leanback screens and the Compose ones while they coexist.
  */
-@OptIn(ExperimentalTvMaterial3Api::class)
+@OptIn(ExperimentalTvMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CodexCineTheme(content: @Composable () -> Unit) {
     val colors = CodexColors(
@@ -72,7 +74,11 @@ fun CodexCineTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalCodexColors provides colors) {
         MaterialTheme(colorScheme = scheme, typography = codexTypography()) {
             // Text outside a Surface would otherwise be black on the night background.
-            CompositionLocalProvider(LocalContentColor provides colors.ivory, content = content)
+            CompositionLocalProvider(
+                LocalContentColor provides colors.ivory,
+                LocalBringIntoViewSpec provides FocusScrollSpec,
+                content = content,
+            )
         }
     }
 }

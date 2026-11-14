@@ -88,7 +88,7 @@ fun ScreenFrame(
 
 /** A spinning amber arc, shown while a screen loads. */
 @Composable
-fun LoadingIndicator(modifier: Modifier = Modifier) {
+fun LoadingIndicator(modifier: Modifier = Modifier, diameter: Dp = 48.dp) {
     val amber = CodexTheme.colors.amber
     val turn by rememberInfiniteTransition(label = "spinner").animateFloat(
         initialValue = 0f,
@@ -96,7 +96,7 @@ fun LoadingIndicator(modifier: Modifier = Modifier) {
         animationSpec = infiniteRepeatable(tween(durationMillis = 900, easing = LinearEasing), RepeatMode.Restart),
         label = "spinnerAngle",
     )
-    Canvas(modifier.size(48.dp).graphicsLayer { rotationZ = turn }) {
+    Canvas(modifier.size(diameter).graphicsLayer { rotationZ = turn }) {
         val stroke = 5.dp.toPx()
         drawArc(
             color = amber,

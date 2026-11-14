@@ -669,3 +669,27 @@ free); every comparison below was redone on the same freshly booted emulator.
 
 Compose is about 7 ms slower per frame and starts 0.5 s later on this emulator, and uses less memory. A
 real box has a GPU, which should narrow the gap, but this has to be checked on one before the release (US-20).
+
+### US-17: player overlay in Compose (PLAYER_OVERLAY flag)
+
+- `PlayerControls` is the contract the player fragment sees (state in, presses out, no decisions). It is
+  implemented by `PlayerOverlayView` (views) and `ComposePlayerOverlay`, chosen by the `PLAYER_OVERLAY` flag.
+  The WebView, the bridge, `RemoteKeyMapper` and `WebPlayerViewModel` are untouched; remote keys still go
+  through `dispatchKeyEvent` and `onRemoteKey` first, and what they let through reaches the Compose focus.
+- The overlay is a `ComposeView` over the WebView. `PlayerOverlayState` (Compose state) is written by the
+  fragment; the content only reads it. The fragment's focus requests ("reveal on the progress bar", "panel
+  opened") become a `focusRequest` that the content honours as soon as it can (`requestFocusWhenReady`).
+- Parity: top and bottom bars with their scrims, progress bar (buffered, thumb, ring when focused),
+  seek preview that follows the thumb, the focused control's name next to the buttons, loading, feedback,
+  banner, and the five panels (speed, exit, resume, next with its 5 s ring, error).
+- **Focus neighbours.** Compose picks the nearest target for Down from the wide progress bar, which was the
+  Quit button. As in the view layout (`nextFocusDown` / `nextFocusUp`), the progress bar now goes down to
+  play/pause and every button goes up to the progress bar. A panel is only as wide as its widest line.
+- **A bug that the Compose version exposed in the fragment:** the controls' hide timer, posted on the view,
+  could fire after the fragment had gone and call `requireContext()`. `hideControlsIfIdle` now returns when
+  the fragment is detached.
+- Verified on the emulator against the local test page (`DebugLaunchActivity --es screen harness`), both
+  versions: controls reveal, Up to the progress bar, Down to play/pause with its name, Right to the speed
+  button, the speed panel, choosing 1,5×, Back hiding the controls and Right showing them again, and the
+  error panel on `outer_broken.html`. Not exercised: the resume prompt and the next-episode panel (they need
+  a real title and a saved position), and TalkBack.

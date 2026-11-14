@@ -1,6 +1,8 @@
 package dev.codexsoft.codexcine.ui.playback.web
 
 import android.content.Context
+import dev.codexsoft.codexcine.ui.compose.ComposeFlags
+import dev.codexsoft.codexcine.ui.compose.ComposeScreen
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -70,7 +72,7 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
 
     private lateinit var webContainer: FrameLayout
     private lateinit var fullscreenContainer: FrameLayout
-    private lateinit var controls: PlayerOverlayView
+    private lateinit var controls: PlayerControls
 
     private var webView: WebView? = null
     private var bridge: PlayerBridge? = null
@@ -79,6 +81,10 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
 
     private var isEnhanced = true
     private val keyMapper = RemoteKeyMapper()
+
+    /** The controls over the video: Compose or views, by the `PLAYER_OVERLAY` flag. */
+    private fun playerControls(context: Context): PlayerControls =
+        if (ComposeFlags.isEnabled(context, ComposeScreen.PLAYER_OVERLAY)) ComposePlayerOverlay(context) else PlayerOverlayView(context)
     private val consumedKeyDowns = HashSet<Int>()
 
     /** A panel the viewer opened, as opposed to one that follows from the player's state. */
@@ -144,12 +150,12 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
         val context = inflater.context
         webContainer = FrameLayout(context)
         fullscreenContainer = FrameLayout(context)
-        controls = PlayerOverlayView(context)
+        controls = playerControls(context)
         return FrameLayout(context).apply {
             setBackgroundColor(android.graphics.Color.BLACK)
             addView(webContainer, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
             addView(fullscreenContainer, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-            addView(controls, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+            addView(controls.view, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         }
     }
 
@@ -321,7 +327,7 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
     private fun announceFailure(failure: PlayerFailure) {
         if (lastAnnouncedFailure == failure) return
         lastAnnouncedFailure = failure
-        controls.announceForAccessibility(
+        controls.view.announceForAccessibility(
             getString(
                 if (failure == PlayerFailure.NO_SOURCE || failure == PlayerFailure.SOURCE_TIMEOUT) {
                     R.string.player_announce_no_source
@@ -362,11 +368,11 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
             true -> {
                 view?.removeCallbacks(hideControlsRunnable)
                 controls.revealControls(RevealFocus.CURRENT)
-                if (!wasFirstState) controls.announceForAccessibility(getString(R.string.player_announce_pause))
+                if (!wasFirstState) controls.view.announceForAccessibility(getString(R.string.player_announce_pause))
             }
             false -> {
                 scheduleControlsHide()
-                if (!wasFirstState) controls.announceForAccessibility(getString(R.string.player_announce_play))
+                if (!wasFirstState) controls.view.announceForAccessibility(getString(R.string.player_announce_play))
             }
             null -> Unit
         }
@@ -388,7 +394,7 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
         if (prefs.getBoolean(PREF_BASIC_NOTICE_SHOWN, false)) return
         prefs.edit { putBoolean(PREF_BASIC_NOTICE_SHOWN, true) }
         basicNotice = getString(R.string.player_basic_notice)
-        controls.postDelayed(
+        controls.view.postDelayed(
             {
                 basicNotice = null
                 if (view != null) render(viewModel.uiState.value)
@@ -408,6 +414,9 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
     }
 
     private fun hideControlsIfIdle() {
+        // The timer lives on the window's handler: when the window is torn down before onDestroyView, the
+        // view can no longer cancel it, and it fires after the fragment has gone.
+        if (!isAdded || view == null) return
         val state = viewModel.uiState.value
         val isPlaying = state.video?.isPaused == false || !isEnhanced
         if (!isPlaying || controls.panel != PlayerPanel.NONE || isTalkBackActive()) return
@@ -515,7 +524,7 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
 
     private fun goToNextEpisode() {
         if (viewModel.uiState.value.nextEpisode == null) return
-        controls.announceForAccessibility(getString(R.string.player_cd_next))
+        controls.view.announceForAccessibility(getString(R.string.player_cd_next))
         viewModel.nextEpisode()
     }
 

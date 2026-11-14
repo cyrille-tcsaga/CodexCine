@@ -45,10 +45,12 @@ enum class OverlayAction {
 class PlayerOverlayView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-) : FrameLayout(context, attrs) {
+) : FrameLayout(context, attrs), PlayerControls {
 
-    var onAction: ((OverlayAction) -> Unit)? = null
-    var onRateSelected: ((Double) -> Unit)? = null
+    override val view: View get() = this
+
+    override var onAction: ((OverlayAction) -> Unit)? = null
+    override var onRateSelected: ((Double) -> Unit)? = null
 
     private val areAnimationsEnabled = Settings.Global.getFloat(
         context.contentResolver,
@@ -92,15 +94,14 @@ class PlayerOverlayView @JvmOverloads constructor(
     private var currentRate = 1.0
     private val hideFeedback = Runnable { feedback.isVisible = false }
 
-    var isControlsVisible = true
+    override var isControlsVisible = true
         private set
-    var panel = PlayerPanel.NONE
+    override var panel = PlayerPanel.NONE
         private set
 
-    val isProgressFocused: Boolean get() = progress.isFocused
+    override val isProgressFocused: Boolean get() = progress.isFocused
 
-    /** Called with the sign of a scroll requested by an accessibility service on the progress bar. */
-    var onProgressAccessibilitySeek: ((Int) -> Unit)?
+    override var onProgressAccessibilitySeek: ((Int) -> Unit)?
         get() = progress.onAccessibilitySeek
         set(value) {
             progress.onAccessibilitySeek = value
@@ -229,7 +230,7 @@ class PlayerOverlayView @JvmOverloads constructor(
 
     // region Static content
 
-    fun setTitles(titleText: String, subtitleText: String, languages: List<String>) {
+    override fun setTitles(titleText: String, subtitleText: String, languages: List<String>) {
         title.text = titleText
         subtitle.text = subtitleText
         subtitle.isVisible = subtitleText.isNotEmpty()
@@ -256,16 +257,15 @@ class PlayerOverlayView @JvmOverloads constructor(
         gravity = Gravity.CENTER
     }
 
-    fun setProviderName(name: String) {
+    override fun setProviderName(name: String) {
         loadingProvider.text = name
     }
 
-    fun setClock(nowMs: Long) {
+    override fun setClock(nowMs: Long) {
         clock.text = Formatters.clock(nowMs)
     }
 
-    /** Basic mode has no data: only the title, a way out and the clock remain. */
-    fun setBasicMode(isBasic: Boolean) {
+    override fun setBasicMode(isBasic: Boolean) {
         bottomBar.isVisible = !isBasic
         if (isBasic) subtitle.text = context.getString(R.string.player_basic_back_hint)
         if (isBasic) subtitle.isVisible = true
@@ -275,7 +275,7 @@ class PlayerOverlayView @JvmOverloads constructor(
 
     // region Playback state
 
-    fun showPlayback(video: VideoState, seekPreviewSeconds: Double?, nowMs: Long) {
+    override fun showPlayback(video: VideoState, seekPreviewSeconds: Double?, nowMs: Long) {
         val shown = seekPreviewSeconds ?: video.currentTime
         progress.setProgress(shown, video.bufferedEnd, video.duration)
         progress.contentDescription = context.getString(
@@ -341,22 +341,22 @@ class PlayerOverlayView @JvmOverloads constructor(
         }
     }
 
-    fun setNextEpisodeAvailable(isAvailable: Boolean) {
+    override fun setNextEpisodeAvailable(isAvailable: Boolean) {
         next.isVisible = isAvailable
     }
 
-    fun setLoading(isLoading: Boolean, isBuffering: Boolean) {
+    override fun setLoading(isLoading: Boolean, isBuffering: Boolean) {
         loading.isVisible = isLoading || isBuffering
         loadingText.isVisible = isLoading
         loadingProvider.isVisible = isLoading
     }
 
-    fun setBanner(text: String?) {
+    override fun setBanner(text: String?) {
         banner.text = text
         banner.isVisible = text != null
     }
 
-    fun showFeedback(@DrawableRes icon: Int?, text: String) {
+    override fun showFeedback(@DrawableRes icon: Int?, text: String) {
         feedbackIcon.isVisible = icon != null
         icon?.let(feedbackIcon::setImageResource)
         feedbackText.text = text
@@ -369,7 +369,7 @@ class PlayerOverlayView @JvmOverloads constructor(
 
     // region Visibility and focus
 
-    fun revealControls(focus: RevealFocus) {
+    override fun revealControls(focus: RevealFocus) {
         val wasVisible = isControlsVisible
         setControlsVisible(true)
         if (panel != PlayerPanel.NONE) return
@@ -382,7 +382,7 @@ class PlayerOverlayView @JvmOverloads constructor(
 
     private fun bottomBarHasFocus() = bottomBar.findFocus() != null
 
-    fun hideControls() {
+    override fun hideControls() {
         setControlsVisible(false)
         requestFocus()
     }
@@ -403,7 +403,7 @@ class PlayerOverlayView @JvmOverloads constructor(
         }
     }
 
-    fun showPanel(new: PlayerPanel) {
+    override fun showPanel(new: PlayerPanel) {
         if (panel == new) return
         panels[panel]?.isVisible = false
         panel = new
@@ -427,11 +427,11 @@ class PlayerOverlayView @JvmOverloads constructor(
         speedOptions.findViewWithTag<View>(currentRate)?.requestFocus()
     }
 
-    fun setResumePrompt(seconds: Double) {
+    override fun setResumePrompt(seconds: Double) {
         resumeTitle.text = context.getString(R.string.player_resume_title, Formatters.timecode(seconds))
     }
 
-    fun setNextCard(episode: EpisodeRef, secondsLeft: Int) {
+    override fun setNextCard(episode: EpisodeRef, secondsLeft: Int) {
         val name = episode.name
         nextTitle.text = if (name.isNullOrBlank()) {
             context.getString(R.string.player_next_title_unnamed, episode.season, episode.episode)
@@ -442,7 +442,7 @@ class PlayerOverlayView @JvmOverloads constructor(
         nextSeconds.text = context.getString(R.string.player_countdown, secondsLeft)
     }
 
-    fun setError(titleText: String, message: String) {
+    override fun setError(titleText: String, message: String) {
         errorTitle.text = titleText
         errorMessage.text = message
     }

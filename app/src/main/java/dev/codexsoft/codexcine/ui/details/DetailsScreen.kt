@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +69,7 @@ import dev.codexsoft.codexcine.ui.compose.components.LoadingIndicator
 import dev.codexsoft.codexcine.ui.compose.components.MediaCard
 import dev.codexsoft.codexcine.ui.compose.components.PillButton
 import dev.codexsoft.codexcine.ui.compose.components.SeasonCard
+import dev.codexsoft.codexcine.ui.compose.components.scrollToTopOnFocus
 import dev.codexsoft.codexcine.ui.compose.components.requestFocusWhenReady
 import dev.codexsoft.codexcine.ui.compose.components.runtimeText
 import dev.codexsoft.codexcine.ui.compose.theme.CodexTheme
@@ -105,9 +107,10 @@ class ComposeDetailsFragment : ComposeScreenFragment() {
         val details = content?.details
         DetailsBackground(details?.backdropUrl)
         Box(Modifier.fillMaxSize()) {
-            LazyColumn(Modifier.fillMaxSize()) {
+            val listState = rememberLazyListState()
+            LazyColumn(Modifier.fillMaxSize(), state = listState) {
                 item(key = "hero") {
-                    Hero(
+                    Box(Modifier.scrollToTopOnFocus(listState)) { Hero(
                         initialTitle = initialTitle,
                         type = details?.mediaType ?: type,
                         details = details,
@@ -116,7 +119,7 @@ class ComposeDetailsFragment : ComposeScreenFragment() {
                         onPlay = ::play,
                         onTrailer = { details?.trailerKey?.let(::openTrailerOf) },
                         onToggleMyList = viewModel::toggleMyList,
-                    )
+                    ) }
                 }
                 if (details != null) {
                     saga?.let { sagaRow -> item(key = "saga") { SagaRowView(sagaRow) } }

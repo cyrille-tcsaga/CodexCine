@@ -791,3 +791,14 @@ and `codexcine://play/...`, an external `SEARCH` intent, and the system "Play ne
 - With animations turned off in the system settings (`ANIMATOR_DURATION_SCALE` = 0) the intro is skipped.
 - Compose animations ignore the system animation scale, so it cannot be slowed down to inspect it; the stages
   were sampled with screenshots on the emulator (logo and light, name, line, tagline, handover to the home).
+
+### Going back up a page
+
+Reported: after scrolling a details or home page down, going back up stopped at the "Lecture" button, and the
+title and the summary above could no longer be reached. Cause: `FocusScrollSpec` (US-12) moves nothing while the
+focused item is fully visible, which is right between two buttons but leaves the top of the page out of reach.
+`Modifier.scrollToTopOnFocus` on the first item of a list (the details hero, the home billboard, or the first
+row of a page without billboard) scrolls to the top when the focus returns to it. It waits 120 ms first, because
+the focus change also asks the list to bring the focused item into view and that request would cancel it.
+Checked on the emulator: details (first and last screenshots identical after a round trip), the home with its
+billboard, and the Films page.

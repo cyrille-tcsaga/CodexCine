@@ -95,6 +95,7 @@ import dev.codexsoft.codexcine.ui.compose.components.MediaCard
 import dev.codexsoft.codexcine.ui.compose.components.MoreCard
 import dev.codexsoft.codexcine.ui.compose.components.NewEpisodeCard
 import dev.codexsoft.codexcine.ui.compose.components.requestFocusWhenReady
+import dev.codexsoft.codexcine.ui.compose.components.scrollToTopOnFocus
 import dev.codexsoft.codexcine.ui.compose.ComposeScreenFragment
 import dev.codexsoft.codexcine.ui.compose.components.LoadingIndicator
 import dev.codexsoft.codexcine.ui.compose.components.dpadClickable
@@ -257,6 +258,7 @@ class ComposeMainFragment : ComposeScreenFragment() {
                         onFeatured = { item -> if (billboardSelected) setBackdrop(item.backdropUrl) },
                         modifier = Modifier
                             .fillParentMaxHeight(BILLBOARD_HEIGHT_FRACTION)
+                            .scrollToTopOnFocus(listState)
                             .onFocusChanged {
                                 if (it.hasFocus) {
                                     billboardSelected = true
@@ -270,6 +272,9 @@ class ComposeMainFragment : ComposeScreenFragment() {
                 val title = stringResource(row.category.titleRes)
                 val cards = remember(row) { cardsOf(row, title) }
                 val position = refocus?.takeIf { it.row == row.category.ordinal }
+                // Without a billboard the first row is the top of the page: going back to it scrolls all the way up.
+                val isTop = billboardItems == null && row == rows.first()
+                Box(if (isTop) Modifier.scrollToTopOnFocus(listState) else Modifier) {
                 CardRow(
                     title = title,
                     items = cards,
@@ -286,6 +291,7 @@ class ComposeMainFragment : ComposeScreenFragment() {
                             }
                         },
                     ) { HomeCard(card, onLongPress = { lastLongPress = RowPosition(row.category.ordinal, cards.indexOf(card), cards.size) }) }
+                }
                 }
             }
         }

@@ -746,3 +746,32 @@ dependencies. The player is now the web player alone, with the Compose overlay o
 - Verified on the emulator with no flag at all: `tools/smoke.sh` (home, details of a film, a saga film and a
   show, season, grid, person, search, About), the drawer, the home's long-press menu and the player on the
   local harness page. `tools/gate.sh` is green and lint reports no unused resource.
+
+### US-20: final check (emulator only)
+
+Measures, all on the same freshly booted `Television_1080p` emulator (3 GB, 4 cores, software rendering), home
+page, 8 Down then 10 Right key presses. The earlier Leanback figures come from the same set-up (see US-16).
+
+| | Leanback | Compose |
+|---|---|---|
+| Cold start (`am start -W`) | 2 029 ms | 2 148 ms |
+| Frames rendered | 334 | 248 |
+| Janky frames | 5.99 % | 11.29 % |
+| 50th / 90th / 95th percentile | 18 / 26 / 32 ms | 23 / 34 / 40 ms |
+| Memory (PSS) | 145 MB | 120 MB |
+| Release APK (R8) | 3 937 445 bytes (before Compose) | 4 680 542 bytes (+18.9 %, Media3 and Leanback removed) |
+
+The first start after a boot, or after an install, takes 11 s or more (dex optimisation), which is not
+representative. The gap is about 5 ms per frame and 0.1 s at start, with 25 MB less memory. The emulator renders
+in software, so a box with a GPU should do better, but this has not been measured.
+
+Checked on the emulator, with no flag: `tools/smoke.sh` (eight screens), the drawer, rows and focus, the
+long-press menu, the player on the local harness page, `codexsoft://`-style links `codexcine://details/...`
+and `codexcine://play/...`, an external `SEARCH` intent, and the system "Play next" row (it shows the cards).
+
+**Not done, and needed before a release:**
+- The parity list on a **real box or TV**: remote feel, real GPU performance, the real Vidzy player with a
+  title (resume prompt, next-episode panel), TalkBack.
+- The self-update from GitHub (`UpdatePrompt`) was not exercised: it needs a published release.
+- The release build was compiled, not installed (it is signed with the local keystore).
+- No tag was created. Tag a version only after the real-device pass.

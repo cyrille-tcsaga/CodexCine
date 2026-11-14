@@ -1,6 +1,6 @@
 # Codex Ciné
 
-Navigateur de films et de séries pour Android TV, basé sur l'API TMDB et l'interface Leanback.
+Navigateur de films et de séries pour Android TV, basé sur l'API TMDB et Jetpack Compose for TV.
 Application à usage personnel, installée manuellement : elle n'est pas destinée à Google Play.
 
 Appareils visés : Xiaomi TV Box S (Google TV 14, API 34) et Mi Box S (Android TV 9, API 28).

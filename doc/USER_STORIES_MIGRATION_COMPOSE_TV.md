@@ -1,6 +1,6 @@
 # Migration de Leanback vers Jetpack Compose for TV : user stories
 
-> **Statut : US-01 à US-19 faites, US-20 (recette finale) à faire.** Leanback n'est plus dans l'application. Le détail de
+> **Statut : US-01 à US-19 faites ; US-20 faite sur émulateur, il reste la recette sur un appareil réel.** Leanback n'est plus dans l'application. Le détail de
 > chaque choix est dans `DECISIONS.md` (section « Migration to Compose for TV »).
 
 Document de pilotage de la migration de l'interface de Codex Ciné. Il découpe le travail en epics et en
@@ -399,4 +399,4 @@ L'accueil concentre l'essentiel du risque. Il est découpé pour être livré pa
 | US-17 | Overlay du lecteur web | 13 | fait |
 | US-18 | Lecteur direct Media3 | 8 | fait |
 | US-19 | Retirer Leanback | 5 | fait |
-| US-20 | Recette finale | 3 | à faire |
+| US-20 | Recette finale | 3 | partiel : émulateur fait, appareil réel à faire |

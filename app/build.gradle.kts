@@ -15,7 +15,6 @@ val localProperties = Properties().apply {
         ?.let { load(StringReader(it)) }
 }
 val tmdbAccessToken = localProperties.getProperty("TMDB_ACCESS_TOKEN").orEmpty().trim()
-val useSampleStream = localProperties.getProperty("USE_SAMPLE_STREAM")?.trim().toBoolean()
 val webPlayerTvMode = localProperties.getProperty("WEB_PLAYER_TV_MODE")?.trim().toBoolean()
 
 // The release number, "1.2.0": from -PappVersion (the CI passes the Git tag), else the default below.
@@ -52,8 +51,6 @@ android {
         buildConfigField("String", "TMDB_ACCESS_TOKEN", "\"$tmdbAccessToken\"")
         buildConfigField("boolean", "WEB_PLAYER_TV_MODE", webPlayerTvMode.toString())
         buildConfigField("String", "UPDATE_REPOSITORY", "\"$updateRepository\"")
-        // Screens that use Compose by default, comma separated (names of ComposeScreen), or "all". Empty: Leanback.
-        buildConfigField("String", "COMPOSE_SCREENS", "\"${providers.gradleProperty("composeScreens").getOrElse("")}\"")
     }
 
     buildFeatures {
@@ -74,14 +71,10 @@ android {
     }
 
     buildTypes {
-        debug {
-            buildConfigField("boolean", "USE_SAMPLE_STREAM", useSampleStream.toString())
-        }
         release {
             optimization {
                 enable = true
             }
-            buildConfigField("boolean", "USE_SAMPLE_STREAM", "false")
             if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -105,7 +98,6 @@ kotlin {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.leanback)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
@@ -122,9 +114,6 @@ dependencies {
     implementation(libs.okhttp)
     debugImplementation(libs.okhttp.logging.interceptor)
     implementation(libs.glide)
-    implementation(libs.media3.exoplayer)
-    implementation(libs.media3.exoplayer.hls)
-    implementation(libs.media3.ui.leanback)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.core.splashscreen)

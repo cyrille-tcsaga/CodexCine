@@ -1,8 +1,6 @@
 package dev.codexsoft.codexcine.ui.playback.web
 
 import android.content.Context
-import dev.codexsoft.codexcine.ui.compose.ComposeFlags
-import dev.codexsoft.codexcine.ui.compose.ComposeScreen
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -82,9 +80,7 @@ class WebPlayerFragment : Fragment(), RemoteKeyHandler {
     private var isEnhanced = true
     private val keyMapper = RemoteKeyMapper()
 
-    /** The controls over the video: Compose or views, by the `PLAYER_OVERLAY` flag. */
-    private fun playerControls(context: Context): PlayerControls =
-        if (ComposeFlags.isEnabled(context, ComposeScreen.PLAYER_OVERLAY)) ComposePlayerOverlay(context) else PlayerOverlayView(context)
+    private fun playerControls(context: Context): PlayerControls = ComposePlayerOverlay(context)
     private val consumedKeyDowns = HashSet<Int>()
 
     /** A panel the viewer opened, as opposed to one that follows from the player's state. */

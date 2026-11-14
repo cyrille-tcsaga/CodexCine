@@ -1,79 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Leanback's widgets, restyled with the brand fonts and colours. Layouts and behaviour are Leanback's. -->
 <resources>
-    <style name="CodexCine.TextView" parent="android:Widget.TextView">
-        <item name="android:fontFamily">@font/brand_text</item>
-    </style>
-
-    <!-- Screen titles -->
-    <style name="CodexCine.Title.Text" parent="Widget.Leanback.Title.Text">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Title</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Title" parent="TextAppearance.Leanback.Title">
-        <item name="android:fontFamily">@font/brand_display</item>
-        <item name="android:textFontWeight">700</item>
-        <item name="android:textColor">@color/brand_ivory</item>
-    </style>
-
-    <!-- Side menu and row headers -->
-    <style name="CodexCine.Header" parent="Widget.Leanback.Header">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Header</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Header" parent="TextAppearance.Leanback.Header">
-        <item name="android:fontFamily">@font/brand_display</item>
-        <item name="android:textFontWeight">500</item>
-    </style>
-    <style name="CodexCine.Row.Header" parent="Widget.Leanback.Row.Header">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Row.Header</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Row.Header" parent="TextAppearance.Leanback.Row.Header">
-        <item name="android:fontFamily">@font/brand_display</item>
-        <item name="android:textFontWeight">700</item>
-        <item name="android:textSize">20sp</item>
-        <item name="android:textColor">@color/brand_ivory</item>
-    </style>
-
-    <!-- Cards -->
-    <style name="CodexCine.Card.Title" parent="Widget.Leanback.ImageCardView.TitleStyle">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Card.Title</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Card.Title" parent="TextAppearance.Leanback.ImageCardView.Title">
-        <item name="android:fontFamily">@font/brand_text</item>
-        <item name="android:textFontWeight">500</item>
-        <item name="android:textColor">@color/brand_ivory</item>
-    </style>
-    <style name="CodexCine.Card.Content" parent="Widget.Leanback.ImageCardView.ContentStyle">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.Card.Content</item>
-    </style>
-    <style name="CodexCine.TextAppearance.Card.Content" parent="TextAppearance.Leanback.ImageCardView.Content">
-        <item name="android:fontFamily">@font/brand_text</item>
-        <item name="android:textColor">@color/brand_mist</item>
-    </style>
-
-    <!-- Rounded buttons laid over artwork (details screen) -->
-    <style name="CodexCine.HeroButton" parent="android:Widget.Material.Button.Borderless">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">52dp</item>
-        <item name="android:background">@drawable/bg_pill</item>
-        <item name="android:drawablePadding">10dp</item>
-        <item name="android:drawableTint">@color/on_pill</item>
-        <item name="android:fontFamily">@font/brand_display</item>
-        <item name="android:paddingStart">22dp</item>
-        <item name="android:paddingEnd">28dp</item>
-        <item name="android:stateListAnimator">@null</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="android:textColor">@color/on_pill</item>
-        <item name="android:textFontWeight">700</item>
-        <item name="android:textSize">20sp</item>
-    </style>
-    <style name="CodexCine.HeroButton.Primary">
-        <item name="android:background">@drawable/bg_pill_primary</item>
-        <item name="android:drawableStart">@drawable/ic_player_play</item>
-        <item name="android:drawableTint">@color/brand_night</item>
-        <item name="android:textColor">@color/brand_night</item>
-    </style>
-
-    <!-- The episode menu (season screen) -->
+    <!-- The dialogs of the app: the menus (season, filters, "Continuer à regarder") and the update offer -->
     <style name="CodexCine.Dialog" parent="android:Theme.Material.Dialog.Alert">
         <item name="android:windowBackground">@drawable/bg_dialog</item>
         <item name="android:colorBackground">@color/brand_ink</item>
@@ -83,21 +10,5 @@
         <item name="android:colorAccent">@color/brand_amber</item>
         <item name="android:colorControlHighlight">@color/dialog_highlight</item>
         <item name="android:fontFamily">@font/brand_text</item>
-    </style>
-
-    <!-- Small help text at the bottom of a screen -->
-    <style name="CodexCine.TextAppearance.Hint" parent="android:TextAppearance.Material.Body1">
-        <item name="android:fontFamily">@font/brand_text</item>
-        <item name="android:textColor">@color/brand_mist</item>
-        <item name="android:textSize">16sp</item>
-    </style>
-
-    <!-- Error and about screens -->
-    <style name="CodexCine.ErrorMessage" parent="Widget.Leanback.ErrorMessageStyle">
-        <item name="android:textAppearance">@style/CodexCine.TextAppearance.ErrorMessage</item>
-    </style>
-    <style name="CodexCine.TextAppearance.ErrorMessage" parent="TextAppearance.Leanback.ErrorMessage">
-        <item name="android:fontFamily">@font/brand_text</item>
-        <item name="android:textColor">@color/brand_ivory</item>
     </style>
 </resources>

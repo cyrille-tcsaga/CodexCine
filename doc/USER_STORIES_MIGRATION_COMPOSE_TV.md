@@ -1,5 +1,8 @@
 # Migration de Leanback vers Jetpack Compose for TV : user stories
 
+> **Statut : US-01 à US-19 faites, US-20 (recette finale) à faire.** Leanback n'est plus dans l'application. Le détail de
+> chaque choix est dans `DECISIONS.md` (section « Migration to Compose for TV »).
+
 Document de pilotage de la migration de l'interface de Codex Ciné. Il découpe le travail en epics et en
 stories livrables une à une, **sans jamais casser l'application existante**.
 
@@ -377,23 +380,23 @@ L'accueil concentre l'essentiel du risque. Il est découpé pour être livré pa
 
 | Story | Titre | Points | État |
 |---|---|---|---|
-| US-01 | Compose et `tv-material` dans le build | 3 | à faire |
-| US-02 | Thème Compose | 3 | à faire |
-| US-03 | Filet de sécurité (hôte, drapeaux, recette) | 5 | à faire |
-| US-04 | Composants de base | 10 | à faire |
-| US-05 | Écran d'erreur | 2 | à faire |
-| US-06 | Écran « À propos » | 2 | à faire |
-| US-07 | Écran de personne | 3 | à faire |
-| US-08 | Écran de saison | 6 | à faire |
-| US-09 | Grille générique | 5 | à faire |
-| US-10 | « Voir tout » avec filtres | 5 | à faire |
-| US-11 | Recherche | 6 | à faire |
-| US-12 | Détails | 13 | à faire |
-| US-13 | Coque de navigation | 8 | à faire |
-| US-14 | Rangées sans vol de focus | 13 | à faire |
-| US-15 | Billboard et fond dynamique | 8 | à faire |
-| US-16 | Appui long « Continuer à regarder » | 5 | à faire |
-| US-17 | Overlay du lecteur web | 13 | à faire |
-| US-18 | Lecteur direct Media3 | 8 | à faire |
-| US-19 | Retirer Leanback | 5 | à faire |
+| US-01 | Compose et `tv-material` dans le build | 3 | fait |
+| US-02 | Thème Compose | 3 | fait |
+| US-03 | Filet de sécurité (hôte, drapeaux, recette) | 5 | fait |
+| US-04 | Composants de base | 10 | fait |
+| US-05 | Écran d'erreur | 2 | fait |
+| US-06 | Écran « À propos » | 2 | fait |
+| US-07 | Écran de personne | 3 | fait |
+| US-08 | Écran de saison | 6 | fait |
+| US-09 | Grille générique | 5 | fait |
+| US-10 | « Voir tout » avec filtres | 5 | fait |
+| US-11 | Recherche | 6 | fait |
+| US-12 | Détails | 13 | fait |
+| US-13 | Coque de navigation | 8 | fait |
+| US-14 | Rangées sans vol de focus | 13 | fait |
+| US-15 | Billboard et fond dynamique | 8 | fait |
+| US-16 | Appui long « Continuer à regarder » | 5 | fait |
+| US-17 | Overlay du lecteur web | 13 | fait |
+| US-18 | Lecteur direct Media3 | 8 | fait |
+| US-19 | Retirer Leanback | 5 | fait |
 | US-20 | Recette finale | 3 | à faire |

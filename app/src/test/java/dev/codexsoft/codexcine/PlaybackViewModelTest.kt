@@ -46,7 +46,7 @@ class PlaybackViewModelTest {
     @Test
     fun `stays loading until the resolver answers, then is ready`() {
         val answer = CompletableDeferred<StreamSource?>()
-        val source = StreamSource.Direct(uri = "https://example.org/video.m3u8")
+        val source = StreamSource.WebEmbed(url = "https://example.org/embed", providerName = "Test")
         val viewModel = PlaybackViewModel(
             request,
             object : StreamSourceResolver {

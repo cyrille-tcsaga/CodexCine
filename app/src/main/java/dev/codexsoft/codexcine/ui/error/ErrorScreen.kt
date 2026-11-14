@@ -1,6 +1,5 @@
 package dev.codexsoft.codexcine.ui.error
 
-import android.content.Context
 import android.os.Bundle
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -29,38 +28,27 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.ui.common.FragmentHostActivity
-import dev.codexsoft.codexcine.ui.compose.ComposeFlags
-import dev.codexsoft.codexcine.ui.compose.ComposeScreen
 import dev.codexsoft.codexcine.ui.compose.ComposeScreenFragment
 import dev.codexsoft.codexcine.ui.compose.components.PillButton
 import dev.codexsoft.codexcine.ui.compose.components.requestFocusWhenReady
 import dev.codexsoft.codexcine.ui.compose.theme.CodexTheme
 
-/**
- * The error screen, in Compose or in Leanback depending on [flag]. Both read the same arguments, so the
- * rest of the app only ever asks for "an error screen".
- */
+/** The error screen, for every screen that fails: the one place that builds it. */
 fun errorScreen(
-    context: Context,
     message: String,
     retryable: Boolean,
     title: String? = null,
     @DrawableRes image: Int = R.drawable.ic_error,
-    flag: ComposeScreen = ComposeScreen.ERROR,
-): Fragment = if (ComposeFlags.isEnabled(context, flag)) {
-    ComposeErrorFragment().apply {
-        arguments = Bundle().apply {
-            putString(ErrorArgs.TITLE, title)
-            putString(ErrorArgs.MESSAGE, message)
-            putBoolean(ErrorArgs.RETRYABLE, retryable)
-            putInt(ErrorArgs.IMAGE, image)
-        }
+): Fragment = ComposeErrorFragment().apply {
+    arguments = Bundle().apply {
+        putString(ErrorArgs.TITLE, title)
+        putString(ErrorArgs.MESSAGE, message)
+        putBoolean(ErrorArgs.RETRYABLE, retryable)
+        putInt(ErrorArgs.IMAGE, image)
     }
-} else {
-    ErrorFragment.newInstance(message, retryable, title, image)
 }
 
-/** Argument keys shared by the two implementations. */
+/** Argument keys of the error screen. */
 internal object ErrorArgs {
     const val TITLE = "title"
     const val MESSAGE = "message"

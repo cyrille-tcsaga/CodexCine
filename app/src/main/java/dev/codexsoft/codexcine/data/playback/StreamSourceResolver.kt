@@ -13,13 +13,6 @@ data class PlaybackRequest(
 
 sealed interface StreamSource {
 
-    /** A media file or stream played natively by Media3. */
-    data class Direct(
-        val uri: String,
-        val mimeType: String? = null, // e.g. MimeTypes.APPLICATION_M3U8
-        val headers: Map<String, String> = emptyMap(),
-    ) : StreamSource
-
     /** A web page that embeds its own player, played in a hardened WebView. */
     data class WebEmbed(
         val url: String,

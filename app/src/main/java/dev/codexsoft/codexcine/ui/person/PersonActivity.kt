@@ -5,13 +5,10 @@ import android.content.Intent
 import androidx.fragment.app.Fragment
 import dev.codexsoft.codexcine.core.Extras
 import dev.codexsoft.codexcine.ui.common.FragmentHostActivity
-import dev.codexsoft.codexcine.ui.compose.ComposeFlags
-import dev.codexsoft.codexcine.ui.compose.ComposeScreen
 
 class PersonActivity : FragmentHostActivity() {
 
-    override fun createContentFragment(): Fragment =
-        if (ComposeFlags.isEnabled(this, ComposeScreen.PERSON)) ComposePersonFragment() else PersonFragment()
+    override fun createContentFragment(): Fragment = ComposePersonFragment()
 
     companion object {
         fun newIntent(context: Context, personId: Int, name: String): Intent =

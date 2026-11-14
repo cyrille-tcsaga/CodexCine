@@ -5,11 +5,11 @@
 ## Porte automatique
 
 - [ ] `tools/gate.sh` : tests unitaires, build debug et lint au vert.
-- [ ] `tools/smoke.sh` (avec les drapeaux de l'écran migré) : aucun `FATAL EXCEPTION`.
+- [ ] `tools/smoke.sh` : aucun `FATAL EXCEPTION`.
 
 ## Parcours manuel sur l'émulateur `Television_1080p` (jamais un appareil personnel)
 
-Activer l'écran : `adb -s emulator-5554 shell am broadcast -n dev.codexsoft.codexcine/.ui.compose.ComposeFlagsReceiver --es screens <ecran>`
+Ouvrir un écran sans naviguer : `adb -s emulator-5554 shell am start -n dev.codexsoft.codexcine/.ui.compose.DebugLaunchActivity --es screen <ecran>` (voir `tools/smoke.sh` pour des exemples).
 
 - [ ] Haut, bas, gauche, droite : le focus ne saute pas et ne se perd pas.
 - [ ] OK, appui long OK, Back : mêmes effets que Leanback.

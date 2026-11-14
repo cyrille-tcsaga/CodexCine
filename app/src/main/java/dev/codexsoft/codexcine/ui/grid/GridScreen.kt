@@ -1,6 +1,12 @@
 package dev.codexsoft.codexcine.ui.grid
 
 import android.widget.Toast
+import dev.codexsoft.codexcine.domain.model.CategoryType
+import dev.codexsoft.codexcine.ui.common.appContainer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -132,5 +138,18 @@ class ComposeGridFragment : ComposeScreenFragment() {
                 ) { item -> MediaCard(item, onClick = { openMediaItem(item) }) }
             }
         }
+    }
+}
+
+/** The category this grid shows, from the activity's intent. */
+internal fun Fragment.gridCategory(): CategoryType =
+    CategoryType.valueOf(requireActivity().intent.getStringExtra(Extras.CATEGORY).orEmpty())
+
+/** The grid's view model, . */
+internal fun Fragment.gridViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val catalog = appContainer.catalogRepository
+        val category = gridCategory()
+        GridViewModel { filters, page -> catalog.filteredPage(category, filters, page) }
     }
 }

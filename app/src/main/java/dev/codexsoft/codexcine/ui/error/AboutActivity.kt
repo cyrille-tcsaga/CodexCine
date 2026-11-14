@@ -2,7 +2,6 @@ package dev.codexsoft.codexcine.ui.error
 
 import android.annotation.SuppressLint
 import android.view.KeyEvent
-import dev.codexsoft.codexcine.ui.compose.ComposeScreen
 import androidx.fragment.app.Fragment
 import dev.codexsoft.codexcine.BuildConfig
 import dev.codexsoft.codexcine.R
@@ -23,8 +22,6 @@ class AboutActivity : FragmentHostActivity() {
     private val settleOkPresses = Runnable { onOkPressesSettled() }
 
     override fun createContentFragment(): Fragment = errorScreen(
-        context = this,
-        flag = ComposeScreen.ABOUT,
         message = getString(R.string.about_message, BuildConfig.VERSION_NAME),
         retryable = false,
         title = getString(R.string.row_about),

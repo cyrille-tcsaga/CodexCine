@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,6 +43,7 @@ fun PillButton(
     @DrawableRes icon: Int? = null,
     height: Dp = 52.dp,
     textStyle: TextStyle = MaterialTheme.typography.labelLarge,
+    description: String? = null,
 ) {
     var focused by remember { mutableStateOf(false) }
     val colors = CodexTheme.colors
@@ -56,6 +59,7 @@ fun PillButton(
             .dpadClickable(onClick)
             .onFocusChanged { focused = it.isFocused }
             .focusable()
+            .semantics { description?.let { contentDescription = it } }
             .background(background, RoundedCornerShape(percent = 50))
             .padding(start = if (icon != null) 22.dp else 28.dp, end = 28.dp),
         verticalAlignment = Alignment.CenterVertically,

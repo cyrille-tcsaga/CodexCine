@@ -30,17 +30,17 @@ vérifiez que son usage est légal là où vous vous trouvez.
 `local.properties` est ignoré par Git : le jeton n'est jamais versionné. Il est en revanche inclus
 dans l'APK, donc ne partagez pas un APK compilé avec votre jeton.
 
-## 2. Tester le lecteur avec une vidéo d'exemple
+## 2. Tester le lecteur sans réseau
 
-Pour vérifier le lecteur de bout en bout, ajoutez cette ligne à `local.properties` :
+Les versions `debug` embarquent un lanceur d'écrans (`DebugLaunchActivity`) qui ouvre le lecteur sur une page
+de test locale, sans passer par Vidzy :
 
-```properties
-USE_SAMPLE_STREAM=true
+```bash
+adb -s emulator-5554 shell am start -n dev.codexsoft.codexcine/.ui.compose.DebugLaunchActivity --es screen harness
 ```
 
-Après recompilation, le bouton **Lecture** diffuse une vidéo de test publique avec le lecteur Media3,
-quel que soit le titre, sans passer par Vidzy. Cette option ne s'applique qu'aux versions `debug` : elle
-est toujours désactivée en `release`.
+`--es page outer_broken.html` ouvre la page qui échoue, pour voir le panneau d'erreur. Cet outil n'existe pas
+dans les versions `release`.
 
 ## 3. Installer sur le boîtier par le réseau
 
@@ -156,8 +156,7 @@ Le lecteur web de Vidzy décode le flux en JavaScript, ce qui est lourd pour un 
 
 Implémentez `StreamSourceResolver`
 (`app/src/main/java/dev/codexsoft/codexcine/data/playback/StreamSourceResolver.kt`) et enregistrez la classe
-dans `di/AppContainer.kt`. Elle retourne `StreamSource.Direct` pour un flux lu par Media3, ou
-`StreamSource.WebEmbed` pour une page web. Dans ce second cas, ajoutez aussi son hôte à
+dans `di/AppContainer.kt`. Elle retourne un `StreamSource.WebEmbed` (une page web qui embarque son lecteur). Ajoutez aussi son hôte à
 `HardenedWebViewFactory` : toute autre page principale est refusée.
 
 ## 5. Identité visuelle

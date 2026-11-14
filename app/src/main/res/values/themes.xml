@@ -1,16 +1,10 @@
 <resources>
 
-    <style name="Theme.CodexCine" parent="@style/Theme.Leanback">
+    <!-- The window of every screen. Compose draws its own backgrounds and text: this only sets the window. -->
+    <style name="Theme.CodexCine" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowBackground">@drawable/default_background</item>
         <item name="android:colorAccent">@color/brand_amber</item>
         <item name="android:fontFamily">@font/brand_text</item>
-        <item name="android:textViewStyle">@style/CodexCine.TextView</item>
-        <item name="browseTitleTextStyle">@style/CodexCine.Title.Text</item>
-        <item name="headerStyle">@style/CodexCine.Header</item>
-        <item name="rowHeaderStyle">@style/CodexCine.Row.Header</item>
-        <item name="imageCardViewTitleStyle">@style/CodexCine.Card.Title</item>
-        <item name="imageCardViewContentStyle">@style/CodexCine.Card.Content</item>
-        <item name="errorMessageStyle">@style/CodexCine.ErrorMessage</item>
     </style>
 
     <!-- Shown by the system while the app starts, then replaced by Theme.CodexCine. -->

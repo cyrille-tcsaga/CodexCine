@@ -418,7 +418,6 @@ noted.
 | retrofit, converter         | 3.0.0   |                                                                             |
 | okhttp, logging-interceptor | 5.5.1   |                                                                             |
 | glide                       | 5.0.9   | Above the brief's 4.16.0 minimum                                            |
-| media3                      | 1.11.1  | Above the brief's 1.10.1 minimum                                            |
 | datastore-preferences       | 1.3.0   |                                                                             |
 | webkit                      | 1.18.0  | Newest stable. 1.19.0 is still alpha.                                       |
 | junit                       | 4.13.2  |                                                                             |
@@ -716,3 +715,34 @@ the first item of the menu and no search button outside it.
   Check `adb shell date` before judging an empty page.
 - Verified: rail, open on Left, selected item first, Films, Séries and Ma liste pages with the focus on the
   page, Back reopening the drawer on the current item, "Recherche" opening the search screen.
+
+### US-18: the direct Media3 player is removed
+
+`PlaybackVideoFragment` (Leanback `VideoSupportFragment` and `LeanbackPlayerAdapter`) only ever played the
+debug sample stream: Vidzy, the only real provider, always answers with a web embed. Migrating it to
+`media3-ui-compose` would have kept a second player alive for no user, so it is deleted with everything that
+fed it: `StreamSource.Direct`, `SampleStreamResolver`, the `USE_SAMPLE_STREAM` setting and the three Media3
+dependencies. The player is now the web player alone, with the Compose overlay of US-17.
+
+- Local player tests no longer need a sample video: `DebugLaunchActivity --es screen harness` opens the
+  player on the local test page (see the README).
+- If a provider with direct streams is ever added, bring Media3 back with `media3-ui-compose`, not Leanback.
+
+### US-19: Leanback is gone
+
+- All screens are Compose: home (modal drawer, billboard, rows), details, season, grids and filters, person,
+  search, error and About, and the player's overlay. No `androidx.leanback` import, dependency or style is left.
+  The migration flags (`ComposeFlags`, `ComposeScreen`, the `composeScreens` Gradle property, the debug
+  receiver) are removed: there is one implementation per screen.
+- Deleted: the 24 Leanback files, the view overlay of the player (`PlayerOverlayView`, `PlayerProgressView`),
+  seven layouts, the Leanback theme parent and styles, and every drawable, colour, dimension and font file that
+  lint then reported unused. The window theme is now `Theme.Material.NoActionBar`; the splash theme and the
+  dialog style stay.
+- `uses-feature android.software.leanback` stays in the manifest: it is what the TV launcher reads, not the library.
+- `FragmentHostActivity` stays: every screen is still a fragment hosted by it (a `ComposeScreenFragment`),
+  which keeps the error screen and its retry working without a screen of its own.
+- Accessibility: the Leanback buttons carried content descriptions ("Lecture <titre>", "Ajouter à ma liste");
+  `PillButton` now takes a description, used by the details and the billboard buttons.
+- Verified on the emulator with no flag at all: `tools/smoke.sh` (home, details of a film, a saga film and a
+  show, season, grid, person, search, About), the drawer, the home's long-press menu and the player on the
+  local harness page. `tools/gate.sh` is green and lint reports no unused resource.

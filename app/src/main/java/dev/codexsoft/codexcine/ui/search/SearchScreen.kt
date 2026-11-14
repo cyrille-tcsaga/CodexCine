@@ -1,6 +1,11 @@
 package dev.codexsoft.codexcine.ui.search
 
 import android.app.Activity
+import dev.codexsoft.codexcine.ui.common.appContainer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
 import android.app.SearchManager
 import android.content.Intent
 import android.speech.RecognizerIntent
@@ -279,3 +284,15 @@ private fun SearchField(
         )
     }
 }
+
+/** The intent actions the system search and the Assistant use to open a search. */
+internal val SEARCH_ACTIONS = setOf(Intent.ACTION_SEARCH, "com.google.android.gms.actions.SEARCH_ACTION")
+
+/** The search view model, . */
+internal fun Fragment.searchViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val catalog = appContainer.catalogRepository
+        SearchViewModel { query -> catalog.search(query) }
+    }
+}
+

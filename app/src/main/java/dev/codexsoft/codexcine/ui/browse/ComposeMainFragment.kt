@@ -2,6 +2,11 @@ package dev.codexsoft.codexcine.ui.browse
 
 import android.content.Intent
 import androidx.activity.compose.BackHandler
+import dev.codexsoft.codexcine.ui.common.appContainer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -452,5 +457,20 @@ private fun NavigationDrawerScope.DrawerEntry(
         ),
     ) {
         Text(text = label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+    }
+}
+
+/** The factory for [MainViewModel]. */
+internal fun Fragment.mainViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val container = appContainer
+        MainViewModel(
+            container.catalogRepository,
+            container.myListRepository,
+            container.watchProgressRepository,
+            container.watchedEpisodesRepository,
+            container.watchNextPublisher,
+            container.persistenceScope,
+        )
     }
 }

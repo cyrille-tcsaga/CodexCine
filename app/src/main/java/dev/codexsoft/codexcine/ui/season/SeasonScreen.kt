@@ -1,6 +1,11 @@
 package dev.codexsoft.codexcine.ui.season
 
 import android.app.AlertDialog
+import dev.codexsoft.codexcine.ui.common.appContainer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -93,5 +98,21 @@ class ComposeSeasonFragment : ComposeScreenFragment() {
                 viewModel.apply(actions[which], item)
             }
             .show()
+    }
+}
+
+/** The season screen's view model, . */
+internal fun Fragment.seasonViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val container = appContainer
+        val intent = requireActivity().intent
+        SeasonViewModel(
+            showId = intent.getIntExtra(Extras.MEDIA_ID, Extras.NO_VALUE),
+            seasonNumber = intent.getIntExtra(Extras.SEASON_NUMBER, Extras.NO_VALUE),
+            catalog = container.catalogRepository,
+            watched = container.watchedEpisodesRepository,
+            progress = container.watchProgressRepository,
+            persistenceScope = container.persistenceScope,
+        )
     }
 }

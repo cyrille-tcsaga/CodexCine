@@ -41,6 +41,6 @@ fun Fragment.showErrorScreen(kind: ErrorKind) {
 }
 
 fun Fragment.showErrorScreen(message: String, retryable: Boolean, title: String? = null) {
-    val fragment = errorScreen(requireContext(), message, retryable, title)
+    val fragment = errorScreen(message, retryable, title)
     (activity as? FragmentHostActivity)?.showError(fragment)
 }

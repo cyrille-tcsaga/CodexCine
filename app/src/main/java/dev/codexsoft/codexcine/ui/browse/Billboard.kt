@@ -147,12 +147,14 @@ fun Billboard(
                         onClick = { onPlay(current) },
                         primary = true,
                         icon = R.drawable.ic_player_play,
+                        description = "${stringResource(R.string.action_play)} ${current.title}",
                     )
                 }
                 PillButton(
                     text = stringResource(R.string.hero_more_info),
                     onClick = { onMoreInfo(current) },
                     icon = R.drawable.ic_more_info,
+                    description = "${stringResource(R.string.hero_more_info)} ${current.title}",
                 )
             }
         }

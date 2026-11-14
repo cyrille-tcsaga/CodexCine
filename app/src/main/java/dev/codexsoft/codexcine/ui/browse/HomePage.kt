@@ -2,7 +2,6 @@ package dev.codexsoft.codexcine.ui.browse
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.leanback.widget.HeaderItem
 import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.domain.model.CategoryType
 
@@ -60,6 +59,3 @@ enum class HomePage(
         emptyMessageRes = R.string.my_list_empty,
     ),
 }
-
-/** A sidebar entry: Leanback's header, plus the page it opens. */
-class SidebarItem(val page: HomePage, name: String) : HeaderItem(page.ordinal.toLong(), name)

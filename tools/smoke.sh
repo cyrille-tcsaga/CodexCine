@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Opens the main screens on the EMULATOR (never a physical device) and fails on any crash in logcat.
-# Needs a debug build installed. Usage: tools/smoke.sh [flags]   e.g. tools/smoke.sh details,error
-# `flags` are the Compose screens to enable for the run (default: whatever the build says).
+# Needs a debug build installed. Usage: tools/smoke.sh
 set -euo pipefail
 ADB="adb -s ${EMULATOR:-emulator-5554}"
 PKG=dev.codexsoft.codexcine
@@ -9,9 +8,6 @@ LAUNCH="$PKG/.ui.compose.DebugLaunchActivity"
 WAIT="${WAIT:-9}"
 
 $ADB get-state >/dev/null || { echo "No emulator at ${EMULATOR:-emulator-5554}"; exit 2; }
-if [ "${1:-}" ]; then
-  $ADB shell am broadcast -n "$PKG/.ui.compose.ComposeFlagsReceiver" --es screens "$1" >/dev/null
-fi
 $ADB logcat -c
 
 open() { # label, args...

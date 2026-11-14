@@ -66,7 +66,6 @@ class PlaybackResolverFragment : Fragment() {
 
     private fun openPlayer(source: StreamSource) {
         val player = when (source) {
-            is StreamSource.Direct -> PlaybackVideoFragment.newInstance(source)
             is StreamSource.WebEmbed -> WebPlayerFragment.newInstance(source)
         }
         parentFragmentManager.commit {

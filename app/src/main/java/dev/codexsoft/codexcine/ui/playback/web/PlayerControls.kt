@@ -3,6 +3,27 @@ package dev.codexsoft.codexcine.ui.playback.web
 import android.view.View
 import androidx.annotation.DrawableRes
 
+enum class PlayerPanel { NONE, SPEED, EXIT, RESUME, NEXT, ERROR }
+
+enum class OverlayAction {
+    REWIND,
+    PLAY_PAUSE,
+    FORWARD,
+    SPEED,
+    MUTE,
+    NEXT,
+    RELOAD,
+    QUIT,
+    EXIT_CONTINUE,
+    EXIT_QUIT,
+    RESUME_YES,
+    RESUME_NO,
+    NEXT_NOW,
+    NEXT_CANCEL,
+    ERROR_RETRY,
+    ERROR_BACK,
+}
+
 /**
  * The native controls above the WebView, as the player fragment sees them: it sends state, they report
  * presses and decide nothing. Two implementations exist while the migration lasts: [PlayerOverlayView]

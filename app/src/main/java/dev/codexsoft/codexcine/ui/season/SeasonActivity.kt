@@ -5,13 +5,10 @@ import android.content.Intent
 import androidx.fragment.app.Fragment
 import dev.codexsoft.codexcine.core.Extras
 import dev.codexsoft.codexcine.ui.common.FragmentHostActivity
-import dev.codexsoft.codexcine.ui.compose.ComposeFlags
-import dev.codexsoft.codexcine.ui.compose.ComposeScreen
 
 class SeasonActivity : FragmentHostActivity() {
 
-    override fun createContentFragment(): Fragment =
-        if (ComposeFlags.isEnabled(this, ComposeScreen.SEASON)) ComposeSeasonFragment() else SeasonFragment()
+    override fun createContentFragment(): Fragment = ComposeSeasonFragment()
 
     companion object {
         fun newIntent(context: Context, showId: Int, seasonNumber: Int, showTitle: String): Intent =

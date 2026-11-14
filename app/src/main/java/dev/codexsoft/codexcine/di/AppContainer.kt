@@ -2,7 +2,6 @@ package dev.codexsoft.codexcine.di
 
 import android.content.Context
 import dev.codexsoft.codexcine.BuildConfig
-import dev.codexsoft.codexcine.data.playback.SampleStreamResolver
 import dev.codexsoft.codexcine.data.playback.StreamSourceResolver
 import dev.codexsoft.codexcine.data.progress.WatchProgressRepository
 import dev.codexsoft.codexcine.data.progress.WatchedEpisodesRepository
@@ -112,7 +111,7 @@ class AppContainer(context: Context) {
 
     /** The active video source. To plug in another provider, register its resolver here. */
     val streamSourceResolver: StreamSourceResolver by lazy {
-        if (BuildConfig.USE_SAMPLE_STREAM) SampleStreamResolver() else VidzyStreamSourceResolver(vidzyRepository)
+        VidzyStreamSourceResolver(vidzyRepository)
     }
 
     private companion object {

@@ -1,6 +1,15 @@
 package dev.codexsoft.codexcine.ui.details
 
 import androidx.compose.foundation.background
+import dev.codexsoft.codexcine.ui.common.appContainer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
+import androidx.core.net.toUri
+import android.widget.Toast
+import android.content.Intent
+import android.content.ActivityNotFoundException
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -262,6 +271,7 @@ private fun Hero(
                 primary = true,
                 icon = R.drawable.ic_player_play,
                 modifier = Modifier.focusRequester(playFocus),
+                description = "${stringResource(R.string.action_play)} $title",
             )
             if (details?.trailerKey != null) {
                 PillButton(stringResource(R.string.action_trailer), onClick = onTrailer, icon = R.drawable.ic_trailer)
@@ -271,6 +281,7 @@ private fun Hero(
                     text = stringResource(R.string.action_my_list),
                     onClick = onToggleMyList,
                     icon = if (isInMyList) R.drawable.ic_check else R.drawable.ic_add,
+                    description = stringResource(if (isInMyList) R.string.action_remove_my_list else R.string.action_add_my_list),
                 )
             }
         }
@@ -332,3 +343,36 @@ private fun Badge(text: String, warn: Boolean = false) {
         modifier = Modifier.border(1.5.dp, colors.badgeStroke, shape).padding(horizontal = 8.dp, vertical = 2.dp),
     )
 }
+
+/** The details screen's view model, for the Leanback and the Compose fragments alike. */
+internal fun Fragment.detailsViewModelFactory(): ViewModelProvider.Factory = viewModelFactory {
+    initializer {
+        val container = appContainer
+        val intent = requireActivity().intent
+        DetailsViewModel(
+            mediaId = intent.getIntExtra(Extras.MEDIA_ID, Extras.NO_VALUE),
+            mediaType = MediaType.fromValue(intent.getStringExtra(Extras.MEDIA_TYPE)) ?: MediaType.MOVIE,
+            catalog = container.catalogRepository,
+            myList = container.myListRepository,
+            vidzy = container.vidzyRepository,
+            watchProgress = container.watchProgressRepository,
+        )
+    }
+}
+
+/** Opens a trailer in the YouTube app, else in a browser, else says that nothing can play it. */
+internal fun Fragment.openTrailerOf(key: String) {
+    val inApp = Intent(Intent.ACTION_VIEW, "vnd.youtube:$key".toUri())
+    val inBrowser = Intent(Intent.ACTION_VIEW, "https://www.youtube.com/watch?v=$key".toUri())
+    if (!tryStart(inApp) && !tryStart(inBrowser)) {
+        Toast.makeText(requireContext(), R.string.no_trailer_app, Toast.LENGTH_LONG).show()
+    }
+}
+
+private fun Fragment.tryStart(intent: Intent): Boolean = try {
+    startActivity(intent)
+    true
+} catch (_: ActivityNotFoundException) {
+    false
+}
+

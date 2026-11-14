@@ -8,22 +8,29 @@ import dev.codexsoft.codexcine.ui.update.UpdatePrompt
 
 class MainActivity : FragmentHostActivity() {
 
-    private var isHomeReady = false
+    private var isSplashDone = false
+    private var isIntroFinished = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // The logo stays up until the first row is ready, so the home never appears empty, but never
-        // longer than SPLASH_MAX_MS: a slow network then shows the home's own loading indicator.
-        installSplashScreen().setKeepOnScreenCondition { !isHomeReady }
+        // The system splash stays up until the first screen (the intro animation) is drawn, but never longer
+        // than SPLASH_MAX_MS.
+        installSplashScreen().setKeepOnScreenCondition { !isSplashDone }
         super.onCreate(savedInstanceState)
-        window.decorView.postDelayed(::onHomeReady, SPLASH_MAX_MS)
+        window.decorView.postDelayed(::onFirstScreenShown, SPLASH_MAX_MS)
     }
 
     override fun createContentFragment(): Fragment = ComposeMainFragment()
 
-    fun onHomeReady() {
-        if (isHomeReady) return
-        isHomeReady = true
-        // Once the home is up, so that an update offer never sits on the splash screen.
+    /** The first screen of the app is on display: the system splash can go. */
+    fun onFirstScreenShown() {
+        isSplashDone = true
+    }
+
+    /** The opening animation is over (or skipped): the home is in view, so an update may be offered. */
+    fun onIntroFinished() {
+        if (isIntroFinished) return
+        isIntroFinished = true
+        onFirstScreenShown()
         UpdatePrompt.offerIfAny(this)
     }
 

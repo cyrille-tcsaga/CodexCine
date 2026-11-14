@@ -141,30 +141,55 @@ class ComposeMainFragment : ComposeScreenFragment() {
     override fun ScreenContent() {
         val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(state) {
-            when (val current = state) {
-                MainUiState.Loading -> Unit
-                is MainUiState.Content -> (activity as? MainActivity)?.onHomeReady()
-                is MainUiState.Error -> {
-                    (activity as? MainActivity)?.onHomeReady()
-                    showErrorScreen(current.kind)
-                }
-            }
+        // The opening animation plays once per launch, while the home loads. With animations turned off in the
+        // system settings it is skipped.
+        val animationsOn = remember {
+            android.provider.Settings.Global.getFloat(
+                requireContext().contentResolver,
+                android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
+                1f,
+            ) != 0f
+        }
+        var introFinished by rememberSaveable { mutableStateOf(!animationsOn) }
+        var introVisible by rememberSaveable { mutableStateOf(animationsOn) }
+        val introFade = remember { androidx.compose.animation.core.Animatable(1f) }
+        LaunchedEffect(Unit) { (activity as? MainActivity)?.onFirstScreenShown() }
+        LaunchedEffect(introFinished) {
+            if (!introFinished) return@LaunchedEffect
+            (activity as? MainActivity)?.onIntroFinished()
+            // The intro fades out over the home, then leaves the composition.
+            introFade.animateTo(0f, androidx.compose.animation.core.tween(500))
+            introVisible = false
+        }
+
+        // A failure is shown once the intro is over: the error screen would cut it short.
+        LaunchedEffect(state, introFinished) {
+            if (!introFinished) return@LaunchedEffect
+            (state as? MainUiState.Error)?.let { showErrorScreen(it.kind) }
         }
 
         var backdrop by remember { mutableStateOf<String?>(null) }
         Box(Modifier.fillMaxSize().background(CodexTheme.colors.night)) {
-            HomeBackdrop(requestedUrl = backdrop)
-            when (state) {
-                MainUiState.Loading -> LoadingIndicator(Modifier.align(Alignment.Center))
-                is MainUiState.Content -> androidx.compose.runtime.CompositionLocalProvider(
-                    LocalBackdrop provides { url -> if (url != null) backdrop = url },
-                ) {
-                    HomeShell(
-                        openSearch = { startActivity(Intent(requireContext(), SearchActivity::class.java)) },
-                    ) { page, onAtTop -> HomePageContent(page, onAtTop) }
+            // The home is composed once the intro is over, so that it neither takes the focus nor draws under it.
+            if (introFinished) {
+                HomeBackdrop(requestedUrl = backdrop)
+                when (state) {
+                    MainUiState.Loading -> LoadingIndicator(Modifier.align(Alignment.Center))
+                    is MainUiState.Content -> androidx.compose.runtime.CompositionLocalProvider(
+                        LocalBackdrop provides { url -> if (url != null) backdrop = url },
+                    ) {
+                        HomeShell(
+                            openSearch = { startActivity(Intent(requireContext(), SearchActivity::class.java)) },
+                        ) { page, onAtTop -> HomePageContent(page, onAtTop) }
+                    }
+                    is MainUiState.Error -> Unit
                 }
-                is MainUiState.Error -> Unit
+            }
+            if (introVisible) {
+                IntroSplash(
+                    onFinished = { introFinished = true },
+                    modifier = Modifier.alpha(introFade.value),
+                )
             }
         }
     }

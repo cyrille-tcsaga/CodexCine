@@ -775,3 +775,19 @@ and `codexcine://play/...`, an external `SEARCH` intent, and the system "Play ne
 - The self-update from GitHub (`UpdatePrompt`) was not exercised: it needs a published release.
 - The release build was compiled, not installed (it is signed with the local keystore).
 - No tag was created. Tag a version only after the real-device pass.
+
+### Opening animation
+
+- `IntroSplash` plays once per launch over the home, in the Netflix spirit: the logo blooms out of the dark with a
+  pulse of amber light, "Codex Ciné" arrives word by word (the last word in amber), an amber line is drawn
+  under it, then the tagline "Vos films et séries, sur grand écran." arrives word by word. About 4.7 s in all, then
+  a 0.5 s fade onto the home. OK or Back skips it.
+- It continues the system splash screen (same night background, same logo): the animation starts 450 ms after
+  the first frame, once the system splash has faded away.
+- The home's view model starts loading as soon as the screen opens, so the home is ready when the intro ends;
+  the home itself is composed only after the intro, so it neither takes the focus nor draws under it. A load
+  error is shown after the intro, not over it. The update offer (`UpdatePrompt`) also waits for the end of the
+  intro. `MainActivity.onHomeReady` became `onFirstScreenShown` and `onIntroFinished`.
+- With animations turned off in the system settings (`ANIMATOR_DURATION_SCALE` = 0) the intro is skipped.
+- Compose animations ignore the system animation scale, so it cannot be slowed down to inspect it; the stages
+  were sampled with screenshots on the emulator (logo and light, name, line, tagline, handover to the home).

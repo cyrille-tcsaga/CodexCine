@@ -13,6 +13,7 @@
     <string name="empty_content">Aucun contenu disponible.</string>
 
     <!-- Sidebar and home billboard -->
+    <string name="nav_search">Recherche</string>
     <string name="page_home">Accueil</string>
     <string name="page_movies">Films</string>
     <string name="page_shows">Séries</string>

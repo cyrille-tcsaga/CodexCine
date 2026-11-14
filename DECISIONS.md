@@ -693,3 +693,26 @@ real box has a GPU, which should narrow the gap, but this has to be checked on o
   button, the speed panel, choosing 1,5×, Back hiding the controls and Right showing them again, and the
   error panel on `outer_broken.html`. Not exercised: the resume prompt and the next-episode panel (they need
   a real title and a saved position), and TalkBack.
+
+### US-13 reworked: modal navigation drawer (HOME flag)
+
+Requested design: the Android TV guide's modal navigation drawer, on a gradient background, with search as
+the first item of the menu and no search button outside it.
+
+- `HomeShell` now uses tv-material's `ModalNavigationDrawer`: a rail of icons (80 dp) that expands over the
+  page, with a horizontal gradient scrim, the logo on top (mark when collapsed, lockup when expanded) and the
+  items: "Recherche", then Accueil, Films, Séries, Ma liste. The floating search button and the top-right
+  logo are gone. A modal drawer changes the page when an item is chosen, not when the focus passes over it.
+- **Focus rules learnt on the emulator**
+  - Moving the focus into the rail lands on the item nearest to where it was (the last one, from the
+    billboard), so the drawer redirects to the item of the page shown when it opens.
+  - The page cannot take the focus while the drawer is open (the library blocks it), so choosing an item
+    first closes the drawer, then asks the page for the focus once it has been recomposed.
+  - Redirecting on every focus change made Down stick on the first item; it is done on open only.
+- Back from a page opens the drawer on the current item, a second Back leaves the app, as in Leanback.
+- The page starts after the rail, so cards are 80 dp further right than on the Leanback home.
+- **Test environment trap:** after the Mac slept, the emulator's clock was 6 h behind and TMDB calls failed
+  with "Chain validation failed", leaving whole pages (Séries) empty. Cold-booting the emulator resyncs it.
+  Check `adb shell date` before judging an empty page.
+- Verified: rail, open on Left, selected item first, Films, Séries and Ma liste pages with the focus on the
+  page, Back reopening the drawer on the current item, "Recherche" opening the search screen.

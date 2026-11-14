@@ -266,7 +266,7 @@ L'accueil concentre l'essentiel du risque. Il est découpé pour être livré pa
 **En tant que** spectateur, **je veux** naviguer entre Accueil, Films, Séries… avec la barre latérale, **afin de** parcourir le catalogue.
 
 - **Critères d'acceptation**
-  - `NavigationDrawer` (ou équivalent) avec les entrées de `HomePage` (icône + libellé), logo `logo_lockup`, accès à la recherche.
+  - `ModalNavigationDrawer` (tv-material), comme dans le guide Android TV : rail d'icônes replié, déployé par-dessus la page sur un fond dégradé, logo en tête, **« Recherche » en premier élément**, puis les pages de `HomePage` (icône + libellé). Plus de bouton de recherche flottant. La page change quand on valide un élément, pas au simple passage du focus.
   - Ouverture de la barre : Gauche depuis la première colonne ; fermeture : Droite ou OK ; Back ferme la barre puis quitte l'application comme avant.
   - Chaque page lit le même `MainViewModel` (chargé une seule fois, partagé).
   - L'état d'erreur initial affiche `ErrorScreen`.

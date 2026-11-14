@@ -27,6 +27,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
@@ -38,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -61,6 +65,14 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.rememberDrawerState
+import androidx.tv.material3.NavigationDrawerScope
+import androidx.tv.material3.NavigationDrawerItemDefaults
+import androidx.tv.material3.NavigationDrawerItem
+import androidx.tv.material3.ModalNavigationDrawer
+import androidx.tv.material3.Icon
+import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.DrawerValue
 import androidx.tv.material3.Text
 import dev.codexsoft.codexcine.R
 import dev.codexsoft.codexcine.data.progress.WatchProgress
@@ -306,183 +318,139 @@ private fun cardKey(card: Any): String = when (card) {
     else -> "about"
 }
 
+/** Width of the collapsed navigation rail: the page starts after it. */
+private val RailWidth = 80.dp
+
 /**
- * The sidebar, the page, and the buttons on top. [page] draws the selected page; it keeps the focus
- * while the sidebar is closed.
+ * The home's navigation, as in the Android TV guide for the modal navigation drawer: a rail of icons on the
+ * left that expands over the page, on a gradient scrim, with the logo on top and the destinations below.
+ * "Recherche" is its first item; the others are the pages. As in the guide, a modal drawer changes the
+ * page when an item is chosen, not when the focus passes over it.
+ *
+ * Moving the focus into the rail (Left from the first card, or Back) expands it; moving out of it, or
+ * choosing an item, collapses it and gives the focus back to the page.
  */
+@OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 private fun HomeShell(openSearch: () -> Unit, page: @Composable (HomePage, (Boolean) -> Unit) -> Unit) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
-    var sidebarOpen by remember { mutableStateOf(false) }
-    var atTop by remember { mutableStateOf(true) }
-    val focusManager = LocalFocusManager.current
-    val entryFocus = remember { HomePage.entries.map { FocusRequester() } }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val isOpen = drawerState.currentValue == DrawerValue.Open
     val pageFocus = remember { FocusRequester() }
-
-    fun openSidebar() {
-        sidebarOpen = true
+    // One requester per destination: the search item is the first, then the pages in order.
+    val itemFocus = remember { List(HomePage.entries.size + 1) { FocusRequester() } }
+    val colors = CodexTheme.colors
+    // The drawer opens when the focus enters it, on the item nearest to where the focus was: send it to the item
+    // of the page that is shown instead.
+    LaunchedEffect(isOpen) {
+        if (isOpen) runCatching { itemFocus[selected + 1].requestFocus() }
     }
 
-    fun closeSidebar() {
-        sidebarOpen = false
-        runCatching { pageFocus.requestFocus() }
+    var pageFocusRequests by remember { mutableIntStateOf(0) }
+    LaunchedEffect(pageFocusRequests) {
+        if (pageFocusRequests > 0) pageFocus.requestFocusWhenReady()
     }
 
-    // Leanback opens the sidebar on Back from a page; a second Back leaves the app.
-    BackHandler(enabled = !sidebarOpen) { openSidebar() }
+    // Back from a page opens the drawer, a second Back leaves the app (Leanback did the same).
+    BackHandler(enabled = !isOpen) { runCatching { itemFocus[selected + 1].requestFocus() } }
 
-    // The sidebar takes the focus when it opens, on the entry of the page shown.
-    LaunchedEffect(sidebarOpen) {
-        if (sidebarOpen) {
-            androidx.compose.runtime.withFrameNanos { }
-            runCatching { entryFocus[selected].requestFocus() }
-        }
-    }
-
-    Box(Modifier.fillMaxSize()) {
-        CompositionLocalProvider(
-            LocalLeftEdge provides { if (!sidebarOpen) openSidebar() },
-            LocalPageFocusEnabled provides !sidebarOpen,
-        ) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        scrimBrush = Brush.horizontalGradient(
+            0f to colors.night.copy(alpha = 0.96f),
+            0.55f to colors.night.copy(alpha = 0.7f),
+            1f to Color.Transparent,
+        ),
+        drawerContent = { drawerValue ->
+            Column(
+                Modifier
+                    .fillMaxHeight()
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(colorResource(R.color.fastlane_background), colors.night.copy(alpha = 0.55f)),
+                        ),
+                    )
+                    .padding(horizontal = 12.dp, vertical = 24.dp)
+                    // Whatever the row the focus left, it enters the drawer on the page that is shown.
+                    .selectableGroup(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                // The top section is the app's logo: the mark alone when collapsed, the lockup when expanded.
+                Image(
+                    painter = painterResource(if (drawerValue == DrawerValue.Open) R.drawable.logo_lockup else R.drawable.ic_logo_mark),
+                    contentDescription = stringResource(R.string.app_name),
+                    modifier = Modifier.padding(start = 8.dp, bottom = 24.dp).height(40.dp),
+                    alignment = Alignment.CenterStart,
+                )
+                DrawerEntry(
+                    icon = R.drawable.ic_search,
+                    label = stringResource(R.string.nav_search),
+                    isSelected = false,
+                    onClick = openSearch,
+                    modifier = Modifier.focusRequester(itemFocus[0]),
+                )
+                HomePage.entries.forEachIndexed { index, entry ->
+                    DrawerEntry(
+                        icon = entry.iconRes,
+                        label = stringResource(entry.titleRes),
+                        isSelected = index == selected,
+                        onClick = {
+                            selected = index
+                            // The page cannot take the focus while the drawer is open: close it first.
+                            drawerState.setValue(DrawerValue.Closed)
+                            // The page is recomposed for the new destination: its focus is asked once it exists.
+                            pageFocusRequests++
+                        },
+                        modifier = Modifier.focusRequester(itemFocus[index + 1]),
+                    )
+                }
+            }
+        },
+    ) {
+        CompositionLocalProvider(LocalPageFocusEnabled provides !isOpen) {
             Box(
                 Modifier
                     .fillMaxSize()
+                    .padding(start = RailWidth)
                     .focusRequester(pageFocus)
-                    // Whenever the focus is in the page, the sidebar is closed.
-                    .onFocusChanged { if (it.hasFocus && sidebarOpen) sidebarOpen = false }
                     .focusGroup(),
             ) {
-                androidx.compose.runtime.key(selected) { page(HomePage.entries[selected]) { atTop = it } }
+                androidx.compose.runtime.key(selected) { page(HomePage.entries[selected]) {} }
             }
         }
-
-        val offset by animateDpAsState(if (sidebarOpen) 0.dp else -SidebarWidth, tween(220), label = "sidebar")
-        Sidebar(
-            modifier = Modifier.offset(x = offset),
-            entryFocus = entryFocus,
-            selected = selected,
-            open = sidebarOpen,
-            onSelect = { selected = it },
-            onClose = ::closeSidebar,
-        )
-
-        // Over the sidebar, as in Leanback: the search button stays visible and reachable.
-        TopButtons(onSearch = openSearch, visible = atTop || sidebarOpen)
     }
 }
 
-/** The search button at the top left and the logo at the top right. */
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun TopButtons(onSearch: () -> Unit, visible: Boolean) {
-    val alpha by animateFloatAsState(if (visible) 1f else 0f, tween(180), label = "topButtons")
-    Box(Modifier.fillMaxSize().alpha(alpha).focusProperties { canFocus = visible }) {
-        SearchOrb(onSearch, Modifier.align(Alignment.TopStart).padding(start = SidebarPadding, top = 30.dp))
-        Image(
-            painter = painterResource(R.drawable.logo_lockup),
-            contentDescription = null,
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = 30.dp, end = CodexTheme.dimens.heroPaddingStart).height(64.dp),
-        )
-    }
-}
-
-@Composable
-private fun SearchOrb(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    var focused by remember { mutableStateOf(false) }
-    Box(
-        modifier = modifier
-            .size(62.dp)
-            .dpadClickable(onClick)
-            .onFocusChanged { focused = it.isFocused }
-            .focusable()
-            .clip(CircleShape)
-            .background(if (focused) CodexTheme.colors.ivory else CodexTheme.colors.amber),
-        contentAlignment = Alignment.Center,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ic_search),
-            contentDescription = stringResource(R.string.search_hint),
-            modifier = Modifier.size(30.dp),
-            colorFilter = ColorFilter.tint(CodexTheme.colors.night),
-        )
-    }
-}
-
-/** The page entries. Only focusable while [open], so that a closed sidebar never catches the focus. */
-@Composable
-private fun Sidebar(
-    modifier: Modifier,
-    entryFocus: List<FocusRequester>,
-    selected: Int,
-    open: Boolean,
-    onSelect: (Int) -> Unit,
-    onClose: () -> Unit,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .width(SidebarWidth)
-            .background(colorResource(R.color.fastlane_background))
-            .focusProperties { canFocus = open }
-            .onKeyEvent { event ->
-                if (open && event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight) {
-                    onClose()
-                    true
-                } else {
-                    false
-                }
-            }
-            .padding(start = SidebarPadding),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        HomePage.entries.forEachIndexed { index, entry ->
-            SidebarEntry(
-                page = entry,
-                isSelected = index == selected,
-                onFocus = { onSelect(index) },
-                onClick = onClose,
-                modifier = Modifier.focusRequester(entryFocus[index]),
-            )
-        }
-    }
-}
-
-@Composable
-private fun SidebarEntry(
-    page: HomePage,
+private fun NavigationDrawerScope.DrawerEntry(
+    @androidx.annotation.DrawableRes icon: Int,
+    label: String,
     isSelected: Boolean,
-    onFocus: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var focused by remember { mutableStateOf(false) }
     val colors = CodexTheme.colors
-    val background by animateColorAsState(if (focused) colors.ivory else androidx.compose.ui.graphics.Color.Transparent, label = "entry")
-    val content = if (focused) colors.night else colors.ivory
-    Row(
-        modifier = modifier
-            .padding(vertical = 10.dp)
-            .alpha(if (focused || isSelected) 1f else 0.6f)
-            .dpadClickable(onClick)
-            .onFocusChanged {
-                focused = it.isFocused
-                if (it.isFocused) onFocus()
-            }
-            .focusable()
-            .background(background, RoundedCornerShape(percent = 50))
-            .padding(start = 16.dp, end = 24.dp, top = 10.dp, bottom = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    NavigationDrawerItem(
+        selected = isSelected,
+        onClick = onClick,
+        modifier = modifier,
+        leadingContent = { Icon(painter = painterResource(icon), contentDescription = null, modifier = Modifier.size(26.dp)) },
+        colors = NavigationDrawerItemDefaults.colors(
+            contentColor = colors.ivory.copy(alpha = 0.75f),
+            inactiveContentColor = colors.ivory.copy(alpha = 0.75f),
+            selectedContentColor = colors.amber,
+            selectedContainerColor = Color.Transparent,
+            focusedContainerColor = colors.ivory,
+            focusedContentColor = colors.night,
+            focusedSelectedContainerColor = colors.ivory,
+            focusedSelectedContentColor = colors.night,
+            pressedContainerColor = colors.ivory,
+            pressedContentColor = colors.night,
+            pressedSelectedContainerColor = colors.ivory,
+            pressedSelectedContentColor = colors.night,
+        ),
     ) {
-        Image(
-            painter = painterResource(page.iconRes),
-            contentDescription = null,
-            modifier = Modifier.size(26.dp),
-            colorFilter = ColorFilter.tint(content),
-        )
-        Text(
-            text = stringResource(page.titleRes),
-            style = MaterialTheme.typography.labelLarge,
-            color = content,
-            modifier = Modifier.padding(start = 16.dp),
-        )
+        Text(text = label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
     }
 }
